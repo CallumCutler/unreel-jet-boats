@@ -8,7 +8,7 @@ ROOT = Path(__file__).parent
 NAV = [
     ("/", "Home", "index"),
     ("/models", "Models", "models"),
-    ("/process", "Build Process", "process"),
+    ("/inventory", "Inventory", "inventory"),
     ("/custom-build", "Custom Build", "custom-build"),
     ("/gallery", "Gallery", "gallery"),
     ("/about", "About", "about"),
@@ -192,7 +192,7 @@ page("index", "Unreel Jet Boats",
 # ---------- Coming soon pages ----------
 SOON = {
     "models": ("Models", "Spec sheets for each boat in the 10 to 24 foot range are on the way."),
-    "process": ("Build Process", "A full walk-through of how a boat goes from first call to first run, with shop photos, is on the way."),
+    "inventory": ("Inventory", "Boats that are built and ready to go will be listed here soon."),
     "custom-build": ("Custom Build", "An interactive tool to lay out your boat (length, console, seating and color) is on the way."),
     "gallery": ("Gallery", "Photos of finished boats and boats on the water are on the way."),
     "about": ("About", "The story behind Unreel Jet Boats is on the way."),
