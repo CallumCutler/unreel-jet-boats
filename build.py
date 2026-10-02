@@ -65,27 +65,17 @@ def page(name, title, desc, active, body):
 # ---------- Home ----------
 HOME = """
   <header class="hero" id="top">
-    <h1>Go where<br>the <em>props</em><br>can't.</h1>
-    <div class="hero-row">
-      <p>Welded aluminum jet boats from 10 to 24 feet, built one at a time in British Columbia for shallow rivers, rock gardens and long days on the water.</p>
+    <div class="hero-copy">
+      <h1>Go where<br>the <em>props</em><br>can't.</h1>
+      <p>Welded aluminum jet boats from 10 to 24 feet, built one at a time in British Columbia for shallow rivers, gravel bars and long days on the water.</p>
       <div class="btns">
         <a class="btn primary" href="/contact">Start an inquiry</a>
         <a class="btn" href="#range">See the range</a>
       </div>
     </div>
-    <svg class="river" viewBox="0 0 1120 170" role="img" aria-label="Side profile of a jet boat running across shallow water">
-      <rect class="h2o" x="0" y="118" width="1120" height="52"/>
-      <g class="boat">
-        <path class="spray" d="M300 112 q-60 -30 -150 -20 M300 116 q-80 -14 -190 2 M300 104 q-40 -44 -120 -56"/>
-        <path class="hull" d="M300 72 L760 62 Q800 60 815 70 Q790 112 720 122 L300 122 Z"/>
-        <path class="rail" d="M300 84 L770 74"/>
-        <path class="hull" d="M520 66 L540 36 L600 34 L612 64 Z"/>
-      </g>
-      <line class="rule" x1="300" y1="150" x2="815" y2="150"/>
-      <line class="rule" x1="300" y1="144" x2="300" y2="156"/>
-      <line class="rule" x1="815" y1="144" x2="815" y2="156"/>
-      <text x="520" y="166">10 – 24 FT LOA</text>
-    </svg>
+    <figure class="hero-photo">
+      <picture><source srcset="/img/gravel-bar.webp" type="image/webp"><img src="/img/gravel-bar.jpg" alt="An Unreel jet boat nosed up on a gravel bar in a clear BC river while an angler casts nearby" width="1400" height="1867" fetchpriority="high"></picture>
+    </figure>
   </header>
 
   <section id="why">
@@ -96,11 +86,11 @@ HOME = """
     <div class="why-grid">
       <div>
         <h3>Runs shallow</h3>
-        <p>A jet drive sits up inside the hull instead of hanging below it. That lets you run gravel bars and skinny channels a prop boat has to stay out of.</p>
+        <p>A jet pulls water in through an intake at the bottom of the hull instead of spinning a prop below it. That lets you run gravel bars and skinny channels a prop boat has to stay out of.</p>
       </div>
       <div>
         <h3>Nothing to strike</h3>
-        <p>With no propeller or lower unit below the boat, there's far less to snag on rocks, logs and stumps when the river drops.</p>
+        <p>With no propeller hanging below the hull, there's far less to snag on rocks, logs and stumps when the river drops.</p>
       </div>
       <div>
         <h3>Aluminum that takes it</h3>
@@ -144,6 +134,31 @@ HOME = """
     </div>
   </section>
 
+  <section id="on-the-water">
+    <div class="head">
+      <span class="label">On the water</span>
+      <h2>Built in the shop, run on BC water</h2>
+    </div>
+    <div class="photos">
+      <figure>
+        <picture><source srcset="/img/helm.webp" type="image/webp"><img src="/img/helm.jpg" alt="Helm console with a stainless steering wheel, switch panels and throttle" width="1100" height="1467" loading="lazy"></picture>
+        <figcaption>Helm console</figcaption>
+      </figure>
+      <figure>
+        <picture><source srcset="/img/stern-seating.webp" type="image/webp"><img src="/img/stern-seating.jpg" alt="Stern seating with two bench seats, cup holders and a pedestal seat" width="1100" height="1467" loading="lazy"></picture>
+        <figcaption>Stern seating</figcaption>
+      </figure>
+      <figure>
+        <picture><source srcset="/img/beached-bow.webp" type="image/webp"><img src="/img/beached-bow.jpg" alt="Boat pulled up bow-first on a sandy lakeshore" width="1100" height="1467" loading="lazy"></picture>
+        <figcaption>Beached on the bow</figcaption>
+      </figure>
+      <figure>
+        <picture><source srcset="/img/crew-evening.webp" type="image/webp"><img src="/img/crew-evening.jpg" alt="Three people relaxing aboard on a lake in the evening light" width="1100" height="1467" loading="lazy"></picture>
+        <figcaption>Evenings on the lake</figcaption>
+      </figure>
+    </div>
+  </section>
+
   <section id="process">
     <div class="head">
       <span class="label">How a build goes</span>
@@ -158,7 +173,8 @@ HOME = """
     </ol>
   </section>
 
-  <section>
+  <section class="cta-band">
+    <picture><source srcset="/img/wake-wide.webp" type="image/webp"><img class="cta-bg" src="/img/wake-wide.jpg" alt="" width="1400" height="1027" loading="lazy"></picture>
     <div class="cta">
       <div class="head">
         <span class="label">Start a build</span>
