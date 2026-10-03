@@ -192,7 +192,6 @@ page("index", "Unreel Jet Boats",
 # ---------- Coming soon pages ----------
 SOON = {
     "inventory": ("Inventory", "Boats that are built and ready to go will be listed here soon."),
-    "custom-build": ("Custom Build", "An interactive tool to lay out your boat (length, console, seating and color) is on the way."),
     "about": ("About", "The story behind Unreel Jet Boats is on the way."),
 }
 for key, (name, line) in SOON.items():
@@ -284,6 +283,82 @@ GALLERY_BODY = f"""
 """
 page("gallery", "Gallery | Unreel Jet Boats",
      "Photos of Unreel Jet Boats on BC rivers and lakes.", "gallery", GALLERY_BODY)
+
+
+# ---------- Custom Build (wizard logic lives in builder.js) ----------
+BUILD_BODY = """
+  <main class="builder-page">
+    <div class="head" id="builder-top">
+      <span class="label">Custom Build</span>
+      <h1>Build your boat</h1>
+      <p class="muted">Work through each step to lay out the boat you want, then send it to us. Nothing is final until we talk it through.</p>
+    </div>
+
+    <ol class="stepper" id="stepper" aria-label="Build steps"></ol>
+
+    <div class="builder">
+      <form class="wizard" id="build-form" name="custom-build" method="POST" action="/thanks" data-netlify="true" netlify-honeypot="company-website">
+        <input type="hidden" name="form-name" value="custom-build">
+        <p class="hidden-field"><label>Leave this empty <input name="company-website" tabindex="-1" autocomplete="off"></label></p>
+        <input type="hidden" name="hull" id="f-hull">
+        <input type="hidden" name="length" id="f-length">
+        <input type="hidden" name="layout" id="f-layout">
+        <input type="hidden" name="seating" id="f-seating">
+        <input type="hidden" name="hull-color" id="f-color">
+        <input type="hidden" name="floor" id="f-floor">
+        <input type="hidden" name="extras" id="f-extras">
+
+        <div id="panel" aria-live="polite"></div>
+
+        <div id="contact-block" class="contact-block" hidden>
+          <div class="row">
+            <div class="field">
+              <label for="b-name">Name <span class="req">*</span></label>
+              <input id="b-name" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label for="b-location">Where are you located?</label>
+              <input id="b-location" name="location" type="text" placeholder="Town, province">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="b-email">Email <span class="req">*</span></label>
+              <input id="b-email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="field">
+              <label for="b-phone">Phone</label>
+              <input id="b-phone" name="phone" type="tel" autocomplete="tel">
+            </div>
+          </div>
+          <div class="field">
+            <label for="b-notes">Anything else?</label>
+            <textarea id="b-notes" name="notes" placeholder="Where you run, motor preferences, anything not listed"></textarea>
+          </div>
+        </div>
+
+        <p class="step-error" id="step-error" role="alert" hidden></p>
+
+        <div class="wizard-nav">
+          <button type="button" class="btn" id="back">Back</button>
+          <button type="button" class="btn primary" id="next">Next</button>
+          <button type="submit" class="btn primary" id="send" hidden>Send my build</button>
+        </div>
+      </form>
+
+      <aside class="preview" aria-label="Your boat so far">
+        <div class="stage">
+          <svg id="boat" viewBox="0 0 660 250" role="img" aria-label="Side view of your boat"></svg>
+        </div>
+        <dl class="summary" id="summary"></dl>
+      </aside>
+    </div>
+    <p class="note muted">More options are on the way. If something you want isn't listed, add it in your notes at the end.</p>
+  </main>
+  <script src="/builder.js"></script>
+"""
+page("custom-build", "Custom Build | Unreel Jet Boats",
+     "Lay out your own Unreel jet boat: hull style, length, layout, finish and extras.", "custom-build", BUILD_BODY)
 
 
 # ---------- Contact ----------

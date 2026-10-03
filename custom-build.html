@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Custom Build | Unreel Jet Boats</title>
-<meta name="description" content="Custom Build from Unreel Jet Boats, coming soon.">
+<meta name="description" content="Lay out your own Unreel jet boat: hull style, length, layout, finish and extras.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -25,15 +25,75 @@
     </ul>
   </nav>
 
-  <main class="soon">
-    <span class="stamp">Coming soon</span>
-    <h1>Custom Build</h1>
-    <p>An interactive tool to lay out your boat (length, console, seating and color) is on the way. In the meantime, tell us what you're looking for and we'll talk it through.</p>
-    <div class="btns">
-      <a class="btn primary" href="/contact">Start an inquiry</a>
-      <a class="btn" href="/">Back to home</a>
+  <main class="builder-page">
+    <div class="head" id="builder-top">
+      <span class="label">Custom Build</span>
+      <h1>Build your boat</h1>
+      <p class="muted">Work through each step to lay out the boat you want, then send it to us. Nothing is final until we talk it through.</p>
     </div>
+
+    <ol class="stepper" id="stepper" aria-label="Build steps"></ol>
+
+    <div class="builder">
+      <form class="wizard" id="build-form" name="custom-build" method="POST" action="/thanks" data-netlify="true" netlify-honeypot="company-website">
+        <input type="hidden" name="form-name" value="custom-build">
+        <p class="hidden-field"><label>Leave this empty <input name="company-website" tabindex="-1" autocomplete="off"></label></p>
+        <input type="hidden" name="hull" id="f-hull">
+        <input type="hidden" name="length" id="f-length">
+        <input type="hidden" name="layout" id="f-layout">
+        <input type="hidden" name="seating" id="f-seating">
+        <input type="hidden" name="hull-color" id="f-color">
+        <input type="hidden" name="floor" id="f-floor">
+        <input type="hidden" name="extras" id="f-extras">
+
+        <div id="panel" aria-live="polite"></div>
+
+        <div id="contact-block" class="contact-block" hidden>
+          <div class="row">
+            <div class="field">
+              <label for="b-name">Name <span class="req">*</span></label>
+              <input id="b-name" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label for="b-location">Where are you located?</label>
+              <input id="b-location" name="location" type="text" placeholder="Town, province">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="b-email">Email <span class="req">*</span></label>
+              <input id="b-email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="field">
+              <label for="b-phone">Phone</label>
+              <input id="b-phone" name="phone" type="tel" autocomplete="tel">
+            </div>
+          </div>
+          <div class="field">
+            <label for="b-notes">Anything else?</label>
+            <textarea id="b-notes" name="notes" placeholder="Where you run, motor preferences, anything not listed"></textarea>
+          </div>
+        </div>
+
+        <p class="step-error" id="step-error" role="alert" hidden></p>
+
+        <div class="wizard-nav">
+          <button type="button" class="btn" id="back">Back</button>
+          <button type="button" class="btn primary" id="next">Next</button>
+          <button type="submit" class="btn primary" id="send" hidden>Send my build</button>
+        </div>
+      </form>
+
+      <aside class="preview" aria-label="Your boat so far">
+        <div class="stage">
+          <svg id="boat" viewBox="0 0 660 250" role="img" aria-label="Side view of your boat"></svg>
+        </div>
+        <dl class="summary" id="summary"></dl>
+      </aside>
+    </div>
+    <p class="note muted">More options are on the way. If something you want isn't listed, add it in your notes at the end.</p>
   </main>
+  <script src="/builder.js"></script>
   <footer>
     <span>© 2026 Unreel Jet Boats</span>
     <span>Welded aluminum · Built in BC</span>
