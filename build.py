@@ -191,7 +191,6 @@ page("index", "Unreel Jet Boats",
 
 # ---------- Coming soon pages ----------
 SOON = {
-    "models": ("Models", "Spec sheets for each boat in the 10 to 24 foot range are on the way."),
     "inventory": ("Inventory", "Boats that are built and ready to go will be listed here soon."),
     "custom-build": ("Custom Build", "An interactive tool to lay out your boat (length, console, seating and color) is on the way."),
     "gallery": ("Gallery", "Photos of finished boats and boats on the water are on the way."),
@@ -210,6 +209,34 @@ for key, (name, line) in SOON.items():
   </main>
 """
     page(key, f"{name} | Unreel Jet Boats", f"{name} from Unreel Jet Boats, coming soon.", key, body)
+
+
+# ---------- Models ----------
+MODELS = [
+    ("1654", "1654 Center Console Jet"),
+    ("1860", "1860 Center Console Jet"),
+]
+cards = "".join(f"""
+      <article class="model">
+        <span class="model-no">{no}</span>
+        <h2>{name}</h2>
+        <ul class="tags"><li>Center console</li><li>Jet</li><li>Welded aluminum</li></ul>
+        <p class="muted">Full spec sheet coming soon. Ask us about sizing, seating and options for this model.</p>
+        <a class="btn primary" href="/contact?model={no}">Ask about the {no}</a>
+      </article>""" for no, name in MODELS)
+MODELS_BODY = f"""
+  <main class="models-page">
+    <div class="head">
+      <span class="label">Models</span>
+      <h1>The lineup</h1>
+      <p class="muted">Every boat is built to order. Start from one of these models, or tell us what you need and we'll build it custom.</p>
+    </div>
+    <div class="model-grid">{cards}
+    </div>
+  </main>
+"""
+page("models", "Models | Unreel Jet Boats",
+     "Unreel Jet Boats models: the 1654 and 1860 Center Console Jet.", "models", MODELS_BODY)
 
 
 # ---------- Contact ----------
@@ -257,6 +284,15 @@ CONTACT = f"""
 
       <fieldset>
         <legend>Your boat</legend>
+        <div class="field">
+          <label for="model">Model</label>
+          <select id="model" name="model">
+            <option value="Not sure yet">Not sure yet</option>
+            <option value="1654">1654 Center Console Jet</option>
+            <option value="1860">1860 Center Console Jet</option>
+            <option value="Custom build">Custom build</option>
+          </select>
+        </div>
         <div class="row">
           <div class="field">
             <label for="length">Length</label>
@@ -319,6 +355,13 @@ CONTACT = f"""
       </div>
     </form>
   </main>
+  <script>
+    (function(){{
+      var m=new URLSearchParams(location.search).get('model');
+      var sel=document.getElementById('model');
+      if(m && sel.querySelector('option[value="'+m+'"]')) sel.value=m;
+    }})();
+  </script>
 """
 page("contact", "Contact | Unreel Jet Boats",
      "Send Unreel Jet Boats an inquiry about a custom aluminum jet boat.", "contact", CONTACT)

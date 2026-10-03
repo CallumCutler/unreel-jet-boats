@@ -143,3 +143,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;
 .hidden-field{position:absolute;left:-9999px}
 
 footer{padding-block:32px 40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font:400 .8rem/1.4 var(--mono);color:var(--muted)}
+
+/* models */
+.models-page{padding-block:clamp(32px,6vw,72px) clamp(56px,9vw,104px);display:grid;gap:clamp(32px,5vw,56px)}
+.models-page h1{font-size:clamp(3rem,8vw,5.5rem);font-weight:900;text-transform:uppercase;line-height:.9}
+.model-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:16px}
+.model{background:var(--surface);border:1px solid var(--line);padding:clamp(20px,3vw,36px);display:grid;gap:16px;align-content:start;min-width:0}
+.model-no{font:900 clamp(4.5rem,12vw,7.5rem)/.85 var(--display);color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.model h2{font-size:clamp(1.5rem,3vw,2rem)}
+.model .btn{justify-self:start}
+.tags{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.tags li{font:500 .72rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:7px 9px;border:1px solid var(--line);color:var(--muted);border-radius:2px}
