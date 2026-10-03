@@ -49,8 +49,8 @@ def nav(active):
 
 
 FOOT = """  <footer>
-    <span>© 2026 Unreel Jet Boats</span>
-    <span>Welded aluminum · Built in BC</span>
+    <span>© 2026 Unreel Jet Boats · Built in Nelson, BC</span>
+    <span class="foot-contact"><a href="tel:+12505516136">250-551-6136</a><a href="mailto:unreelboats@gmail.com">unreelboats@gmail.com</a></span>
   </footer>
 </div>
 </body>
@@ -67,7 +67,7 @@ HOME = """
   <header class="hero" id="top">
     <div class="hero-copy">
       <h1>Go where<br>the <em>props</em><br>can't.</h1>
-      <p>Welded aluminum jet boats from 10 to 24 feet, built one at a time in British Columbia for shallow rivers, gravel bars and long days on the water.</p>
+      <p>Welded aluminum jet boats from 10 to 24 feet, built one at a time in Nelson, BC for shallow rivers, gravel bars and long days on the water.</p>
       <div class="btns">
         <a class="btn primary" href="/contact">Start an inquiry</a>
         <a class="btn" href="#range">See the range</a>
@@ -186,7 +186,7 @@ HOME = """
   </section>
 """
 page("index", "Unreel Jet Boats",
-     "Welded aluminum jet boats from 10 to 24 feet, built in British Columbia.", "index", HOME)
+     "Welded aluminum jet boats from 10 to 24 feet, built in Nelson, BC.", "index", HOME)
 
 
 # ---------- Coming soon pages ----------
@@ -369,9 +369,14 @@ CONTACT = f"""
       <span class="label">Contact</span>
       <h1>Start an inquiry</h1>
       <p class="muted">Tell us about the boat you want and how you'll use it. Rough ideas are fine. We'll get back to you to talk it through.</p>
+      <dl class="direct">
+        <div><dt>Phone</dt><dd><a href="tel:+12505516136">250-551-6136</a></dd></div>
+        <div><dt>Email</dt><dd><a href="mailto:unreelboats@gmail.com">unreelboats@gmail.com</a></dd></div>
+        <div><dt>Shop</dt><dd>Nelson, BC</dd></div>
+      </dl>
       <ul>
         <li>Every boat is built to order, 10 to 24 feet</li>
-        <li>Built in British Columbia</li>
+        <li>Built in Nelson, BC</li>
         <li>Not sure on size yet? Tell us where you run and we'll help you pick.</li>
       </ul>
     </div>
