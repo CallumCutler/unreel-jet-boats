@@ -193,7 +193,6 @@ page("index", "Unreel Jet Boats",
 SOON = {
     "inventory": ("Inventory", "Boats that are built and ready to go will be listed here soon."),
     "custom-build": ("Custom Build", "An interactive tool to lay out your boat (length, console, seating and color) is on the way."),
-    "gallery": ("Gallery", "Photos of finished boats and boats on the water are on the way."),
     "about": ("About", "The story behind Unreel Jet Boats is on the way."),
 }
 for key, (name, line) in SOON.items():
@@ -237,6 +236,54 @@ MODELS_BODY = f"""
 """
 page("models", "Models | Unreel Jet Boats",
      "Unreel Jet Boats models: the 1654 and 1860 Center Console Jet.", "models", MODELS_BODY)
+
+
+# ---------- Gallery ----------
+GALLERY = [
+    ("gravel-bar", 1400, 1867, "Boat nosed up on a gravel bar in a clear BC river while an angler casts nearby", "On the gravel bar"),
+    ("helm", 1100, 1467, "Helm console with a stainless steering wheel, switch panels and throttle", "Helm console"),
+    ("stern-seating", 1100, 1467, "Stern seating with two bench seats, cup holders and a pedestal seat", "Stern seating"),
+    ("beached-bow", 1100, 1467, "Boat pulled up bow-first on a sandy lakeshore", "Beached on the bow"),
+    ("crew-evening", 1100, 1467, "Three people relaxing aboard on a lake in the evening light", "Evenings on the lake"),
+    ("wake-sunset", 1100, 1467, "Outboard jet throwing a wake on a lake at sunset", "Running at sunset"),
+]
+tiles = "".join(f"""
+      <figure>
+        <button type="button" class="tile" data-src="/img/{n}.jpg" data-cap="{c}" aria-label="Open photo: {c}">
+          <picture><source srcset="/img/{n}.webp" type="image/webp"><img src="/img/{n}.jpg" alt="{a}" width="{w}" height="{h}" loading="lazy"></picture>
+        </button>
+        <figcaption>{c}</figcaption>
+      </figure>""" for n, w, h, a, c in GALLERY)
+GALLERY_BODY = f"""
+  <main class="gallery-page">
+    <div class="head">
+      <span class="label">Gallery</span>
+      <h1>On the water</h1>
+      <p class="muted">Boats from the shop, out on BC rivers and lakes.</p>
+    </div>
+    <div class="gallery">{tiles}
+    </div>
+  </main>
+  <dialog id="viewer" aria-label="Photo viewer">
+    <button type="button" class="viewer-close" aria-label="Close">Close</button>
+    <img id="viewer-img" alt="">
+    <p id="viewer-cap"></p>
+  </dialog>
+  <script>
+    (function(){{
+      var d=document.getElementById('viewer'), im=document.getElementById('viewer-img'), cap=document.getElementById('viewer-cap');
+      document.querySelectorAll('.tile').forEach(function(b){{
+        b.addEventListener('click',function(){{
+          im.src=b.dataset.src; im.alt=b.querySelector('img').alt; cap.textContent=b.dataset.cap; d.showModal();
+        }});
+      }});
+      d.querySelector('.viewer-close').addEventListener('click',function(){{ d.close(); }});
+      d.addEventListener('click',function(e){{ if(e.target===d) d.close(); }});
+    }})();
+  </script>
+"""
+page("gallery", "Gallery | Unreel Jet Boats",
+     "Photos of Unreel Jet Boats on BC rivers and lakes.", "gallery", GALLERY_BODY)
 
 
 # ---------- Contact ----------

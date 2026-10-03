@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gallery | Unreel Jet Boats</title>
-<meta name="description" content="Gallery from Unreel Jet Boats, coming soon.">
+<meta name="description" content="Photos of Unreel Jet Boats on BC rivers and lakes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -25,15 +25,68 @@
     </ul>
   </nav>
 
-  <main class="soon">
-    <span class="stamp">Coming soon</span>
-    <h1>Gallery</h1>
-    <p>Photos of finished boats and boats on the water are on the way. In the meantime, tell us what you're looking for and we'll talk it through.</p>
-    <div class="btns">
-      <a class="btn primary" href="/contact">Start an inquiry</a>
-      <a class="btn" href="/">Back to home</a>
+  <main class="gallery-page">
+    <div class="head">
+      <span class="label">Gallery</span>
+      <h1>On the water</h1>
+      <p class="muted">Boats from the shop, out on BC rivers and lakes.</p>
+    </div>
+    <div class="gallery">
+      <figure>
+        <button type="button" class="tile" data-src="/img/gravel-bar.jpg" data-cap="On the gravel bar" aria-label="Open photo: On the gravel bar">
+          <picture><source srcset="/img/gravel-bar.webp" type="image/webp"><img src="/img/gravel-bar.jpg" alt="Boat nosed up on a gravel bar in a clear BC river while an angler casts nearby" width="1400" height="1867" loading="lazy"></picture>
+        </button>
+        <figcaption>On the gravel bar</figcaption>
+      </figure>
+      <figure>
+        <button type="button" class="tile" data-src="/img/helm.jpg" data-cap="Helm console" aria-label="Open photo: Helm console">
+          <picture><source srcset="/img/helm.webp" type="image/webp"><img src="/img/helm.jpg" alt="Helm console with a stainless steering wheel, switch panels and throttle" width="1100" height="1467" loading="lazy"></picture>
+        </button>
+        <figcaption>Helm console</figcaption>
+      </figure>
+      <figure>
+        <button type="button" class="tile" data-src="/img/stern-seating.jpg" data-cap="Stern seating" aria-label="Open photo: Stern seating">
+          <picture><source srcset="/img/stern-seating.webp" type="image/webp"><img src="/img/stern-seating.jpg" alt="Stern seating with two bench seats, cup holders and a pedestal seat" width="1100" height="1467" loading="lazy"></picture>
+        </button>
+        <figcaption>Stern seating</figcaption>
+      </figure>
+      <figure>
+        <button type="button" class="tile" data-src="/img/beached-bow.jpg" data-cap="Beached on the bow" aria-label="Open photo: Beached on the bow">
+          <picture><source srcset="/img/beached-bow.webp" type="image/webp"><img src="/img/beached-bow.jpg" alt="Boat pulled up bow-first on a sandy lakeshore" width="1100" height="1467" loading="lazy"></picture>
+        </button>
+        <figcaption>Beached on the bow</figcaption>
+      </figure>
+      <figure>
+        <button type="button" class="tile" data-src="/img/crew-evening.jpg" data-cap="Evenings on the lake" aria-label="Open photo: Evenings on the lake">
+          <picture><source srcset="/img/crew-evening.webp" type="image/webp"><img src="/img/crew-evening.jpg" alt="Three people relaxing aboard on a lake in the evening light" width="1100" height="1467" loading="lazy"></picture>
+        </button>
+        <figcaption>Evenings on the lake</figcaption>
+      </figure>
+      <figure>
+        <button type="button" class="tile" data-src="/img/wake-sunset.jpg" data-cap="Running at sunset" aria-label="Open photo: Running at sunset">
+          <picture><source srcset="/img/wake-sunset.webp" type="image/webp"><img src="/img/wake-sunset.jpg" alt="Outboard jet throwing a wake on a lake at sunset" width="1100" height="1467" loading="lazy"></picture>
+        </button>
+        <figcaption>Running at sunset</figcaption>
+      </figure>
     </div>
   </main>
+  <dialog id="viewer" aria-label="Photo viewer">
+    <button type="button" class="viewer-close" aria-label="Close">Close</button>
+    <img id="viewer-img" alt="">
+    <p id="viewer-cap"></p>
+  </dialog>
+  <script>
+    (function(){
+      var d=document.getElementById('viewer'), im=document.getElementById('viewer-img'), cap=document.getElementById('viewer-cap');
+      document.querySelectorAll('.tile').forEach(function(b){
+        b.addEventListener('click',function(){
+          im.src=b.dataset.src; im.alt=b.querySelector('img').alt; cap.textContent=b.dataset.cap; d.showModal();
+        });
+      });
+      d.querySelector('.viewer-close').addEventListener('click',function(){ d.close(); });
+      d.addEventListener('click',function(e){ if(e.target===d) d.close(); });
+    })();
+  </script>
   <footer>
     <span>© 2026 Unreel Jet Boats</span>
     <span>Welded aluminum · Built in BC</span>
