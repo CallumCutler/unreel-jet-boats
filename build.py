@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds the Unreel Jet Boats pages from one shared header and footer.
+"""Builds the Unreel Custom Boats pages from one shared header and footer.
 Run: python3 build.py  (writes the .html files next to it)"""
 from pathlib import Path
 
@@ -40,7 +40,7 @@ def nav(active):
         for href, label, key in NAV
     )
     return f"""  <nav aria-label="Main">
-    <a class="mark" href="/"><picture><source srcset="/logo.webp" type="image/webp"><img src="/logo.png" alt="Unreel Jet Boats" width="900" height="263"></picture></a>
+    <a class="mark" href="/"><picture><source srcset="/logo.webp" type="image/webp"><img src="/logo.png" alt="Unreel Custom Boats" width="900" height="210"></picture></a>
     <ul>
 {items}
     </ul>
@@ -49,7 +49,7 @@ def nav(active):
 
 
 FOOT = """  <footer>
-    <span>© 2026 Unreel Jet Boats · Built in Nelson, BC</span>
+    <span>© 2026 Unreel Custom Boats · Built in Nelson, BC</span>
     <span class="foot-contact"><a href="tel:+12505516136">250-551-6136</a><a href="mailto:unreelboats@gmail.com">unreelboats@gmail.com</a></span>
   </footer>
 </div>
@@ -185,14 +185,14 @@ HOME = """
     </div>
   </section>
 """
-page("index", "Unreel Jet Boats",
+page("index", "Unreel Custom Boats",
      "Welded aluminum jet boats from 10 to 24 feet, built in Nelson, BC.", "index", HOME)
 
 
 # ---------- Coming soon pages ----------
 SOON = {
     "inventory": ("Inventory", "Boats that are built and ready to go will be listed here soon."),
-    "about": ("About", "The story behind Unreel Jet Boats is on the way."),
+    "about": ("About", "The story behind Unreel Custom Boats is on the way."),
 }
 for key, (name, line) in SOON.items():
     body = f"""
@@ -206,7 +206,7 @@ for key, (name, line) in SOON.items():
     </div>
   </main>
 """
-    page(key, f"{name} | Unreel Jet Boats", f"{name} from Unreel Jet Boats, coming soon.", key, body)
+    page(key, f"{name} | Unreel Custom Boats", f"{name} from Unreel Custom Boats, coming soon.", key, body)
 
 
 # ---------- Models ----------
@@ -233,8 +233,8 @@ MODELS_BODY = f"""
     </div>
   </main>
 """
-page("models", "Models | Unreel Jet Boats",
-     "Unreel Jet Boats models: the 1654 and 1860 Center Console Jet.", "models", MODELS_BODY)
+page("models", "Models | Unreel Custom Boats",
+     "Unreel Custom Boats models: the 1654 and 1860 Center Console Jet.", "models", MODELS_BODY)
 
 
 # ---------- Gallery ----------
@@ -281,8 +281,8 @@ GALLERY_BODY = f"""
     }})();
   </script>
 """
-page("gallery", "Gallery | Unreel Jet Boats",
-     "Photos of Unreel Jet Boats on BC rivers and lakes.", "gallery", GALLERY_BODY)
+page("gallery", "Gallery | Unreel Custom Boats",
+     "Photos of Unreel Custom Boats on BC rivers and lakes.", "gallery", GALLERY_BODY)
 
 
 # ---------- Custom Build (wizard logic lives in builder.js) ----------
@@ -357,7 +357,7 @@ BUILD_BODY = """
   </main>
   <script src="/builder.js"></script>
 """
-page("custom-build", "Custom Build | Unreel Jet Boats",
+page("custom-build", "Custom Build | Unreel Custom Boats",
      "Lay out your own Unreel jet boat: hull style, length, layout, finish and extras.", "custom-build", BUILD_BODY)
 
 
@@ -490,8 +490,8 @@ CONTACT = f"""
     }})();
   </script>
 """
-page("contact", "Contact | Unreel Jet Boats",
-     "Send Unreel Jet Boats an inquiry about a custom aluminum jet boat.", "contact", CONTACT)
+page("contact", "Contact | Unreel Custom Boats",
+     "Send Unreel Custom Boats an inquiry about a custom aluminum jet boat.", "contact", CONTACT)
 
 
 # ---------- Thank-you page ----------
@@ -505,6 +505,6 @@ THANKS = """
     </div>
   </main>
 """
-page("thanks", "Thanks | Unreel Jet Boats", "Your inquiry was sent.", "", THANKS)
+page("thanks", "Thanks | Unreel Custom Boats", "Your inquiry was sent.", "", THANKS)
 
 print("built", sorted(p.name for p in ROOT.glob("*.html")))
