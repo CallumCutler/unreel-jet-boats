@@ -40,7 +40,7 @@ def nav(active):
         for href, label, key in NAV
     )
     return f"""  <nav aria-label="Main">
-    <a class="mark" href="/"><picture><source srcset="/logo.webp" type="image/webp"><img src="/logo.png" alt="Unreel Custom Boats" width="900" height="210"></picture></a>
+    <a class="mark" href="/"><picture><source srcset="/logo.webp" type="image/webp"><img src="/logo.png" alt="Unreel Custom Boats" width="900" height="207"></picture></a>
     <ul>
 {items}
     </ul>
