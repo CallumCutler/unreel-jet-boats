@@ -89,7 +89,7 @@
   function profile(bottom) {
     var paths = {
       // flat bottom, low sides, short square-raked bow
-      jon:   "M8 22 L150 22 L126 46 L8 46 Z",
+      jon:   "M8 22 L150 22 Q136 46 90 46 L8 46 Z",
       // flat bottom, long sweeping raked bow rising well above the sheer
       sled:  "M8 20 L120 18 L152 10 Q138 30 112 46 L8 46 Z",
       // bottom curves up into a moderate V entry at the bow
