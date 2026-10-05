@@ -40,9 +40,14 @@
         return LAYOUTS;
       } },
     { key: "seating", title: "Seating", type: "multi",
-      intro: "Pick one or both. Skip it if you're not sure yet.",
+      intro: "Pick any you want. Skip it if you're not sure yet.",
       options: function () {
-        return ["Stern jump seats", "Pedestal seats"].map(function (x) { return { id: x }; });
+        return ["Stern jump seats", "Pedestal seats", "Flip-down console front seat"].map(function (x) { return { id: x }; });
+      } },
+    { key: "storage", title: "Storage", type: "multi",
+      intro: "Pick the storage you want. Skip it if you're not sure yet.",
+      options: function () {
+        return ["Dry storage hatches", "Rod lockers", "Under-console storage", "Livewell", "Cooler mount"].map(function (x) { return { id: x }; });
       } },
     { key: "finish", title: "Finish", type: "finish",
       intro: "Choose a hull color and what goes on the floor." },
@@ -59,7 +64,7 @@
   var FLOORS = ["Bare aluminum", "Marine vinyl", "Foam decking"];
 
   // ---------- State ----------
-  var state = { hull: null, length: null, layout: null, seating: [], color: "Raw aluminum", floor: null, extras: [] };
+  var state = { hull: null, length: null, layout: null, seating: [], storage: [], color: "Raw aluminum", floor: null, extras: [] };
   var current = 0;
 
   var $ = function (id) { return document.getElementById(id); };
@@ -233,6 +238,7 @@
     $("f-length").value = lengthLabel(state.length);
     $("f-layout").value = state.layout || "";
     $("f-seating").value = state.seating.join(", ");
+    $("f-storage").value = state.storage.join(", ");
     $("f-color").value = state.color || "";
     $("f-floor").value = state.floor || "";
     $("f-extras").value = state.extras.join(", ");
