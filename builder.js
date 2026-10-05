@@ -14,11 +14,10 @@
     { id: "Deep V", blurb: "A sharp V the full length. Best on big lakes and rough water, and needs more depth to run.", lengths: range(16, 24), bottom: "deepv" }
   ];
 
+  // Console position — every boat is a center console jet
   var LAYOUTS = [
-    { id: "Tiller", blurb: "Steer from the stern. Simple, light and roomy.", maxLen: 16 },
-    { id: "Side console", blurb: "Helm off to one side, open floor down the middle." },
-    { id: "Center console", blurb: "Walk all the way around. Great for fishing.", minLen: 14 },
-    { id: "Walk-through windshield", blurb: "Split windshield with a walkway to the bow. More shelter.", minLen: 18 }
+    { id: "Front console", blurb: "Console set forward. Opens up a big back deck for fishing, gear and passengers.", pos: 0.64 },
+    { id: "Middle console", blurb: "Console in the middle. Balanced ride and walk-around room at both ends.", pos: 0.5 }
   ];
 
   var COLORS = [
@@ -36,11 +35,9 @@
     { key: "length", title: "Length", type: "length", required: true,
       intro: "Pick a length. Only the lengths built on your hull style are shown, with the bottom width where it changes by length." },
     { key: "layout", title: "Layout", type: "single",
-      intro: "How do you want to drive it?",
+      intro: "Where do you want the center console?",
       options: function (s) {
-        return LAYOUTS.filter(function (o) {
-          return (!o.maxLen || s.length <= o.maxLen) && (!o.minLen || s.length >= o.minLen);
-        });
+        return LAYOUTS;
       } },
     { key: "seating", title: "Seating & storage", type: "multi",
       intro: "Pick everything you want. Skip anything you're not sure about.",
@@ -216,15 +213,11 @@
     g += '<path class="hull" fill="' + fill + '" d="' + d + '"/>';
     g += '<path class="rail" d="M' + x0 + " " + (top + 12) + " L" + (x1 - 14) + " " + (top + 4) + '"/>';
     // layout
-    var mid = x0 + L * 0.5, deck = top - 1;
-    if (state.layout === "Tiller") {
-      g += '<line class="part-line" x1="' + (x0 - 12) + '" y1="' + (top - 30) + '" x2="' + (x0 + 34) + '" y2="' + (top - 38) + '"/>';
-    } else if (state.layout === "Side console") {
-      g += '<rect class="part" x="' + (mid - 10) + '" y="' + (deck - 30) + '" width="38" height="30"/><path class="glass" d="M' + (mid + 12) + " " + (deck - 30) + " l14 -18 h8 l-6 18 Z\"/>";
-    } else if (state.layout === "Center console") {
-      g += '<rect class="part" x="' + (mid - 22) + '" y="' + (deck - 36) + '" width="46" height="36"/><path class="glass" d="M' + (mid + 6) + " " + (deck - 36) + " l12 -20 h8 l-4 20 Z\"/>";
-    } else if (state.layout === "Walk-through windshield") {
-      g += '<path class="glass" d="M' + (x0 + L * 0.42) + " " + deck + " L" + (x0 + L * 0.5) + " " + (deck - 44) + " L" + (x0 + L * 0.64) + " " + (deck - 46) + " L" + (x0 + L * 0.66) + " " + (deck - 4) + ' Z"/>';
+    var lay = LAYOUTS.filter(function (o) { return o.id === state.layout; })[0];
+    if (lay) {
+      var cx = x0 + L * lay.pos, cy = top - 8 * (cx - x0) / L;   // follow the rising sheer
+      g += '<rect class="part" x="' + (cx - 22) + '" y="' + (cy - 36) + '" width="44" height="36"/>' +
+        '<path class="glass" d="M' + (cx + 6) + " " + (cy - 36) + " l12 -20 h8 l-4 20 Z\"/>";
     }
     // dimension
     g += '<line class="dim" x1="' + x0 + '" y1="214" x2="' + x1 + '" y2="214"/><line class="dim" x1="' + x0 + '" y1="207" x2="' + x0 + '" y2="221"/><line class="dim" x1="' + x1 + '" y1="207" x2="' + x1 + '" y2="221"/>';

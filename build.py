@@ -213,16 +213,16 @@ for key, (name, line) in SOON.items():
 cards = """
       <article class="model model-feature">
         <figure class="model-photo">
-          <picture><source srcset="/img/gravel-bar.webp" type="image/webp"><img src="/img/gravel-bar.jpg" alt="Center Console Jet pulled up on a gravel bar in a BC river" width="1400" height="1867"></picture>
+          <picture><source srcset="/img/gravel-bar.webp" type="image/webp"><img src="/img/gravel-bar.jpg" alt="Center Console Jon pulled up on a gravel bar in a BC river" width="1400" height="1867"></picture>
         </figure>
         <div class="model-body">
           <span class="label">Model</span>
-          <h2 class="model-name">Center Console Jet</h2>
+          <h2 class="model-name">Center Console Jon</h2>
           <ul class="tags"><li>Center console</li><li>Outboard jet</li><li>Welded aluminum</li></ul>
           <p class="muted">A welded aluminum center console built to run shallow rivers and big lakes. Built to order in Nelson, BC, with the length, seating and options set around how you run.</p>
           <p class="muted">Full spec sheet coming soon.</p>
           <div class="btns">
-            <a class="btn primary" href="/contact?model=Center+Console+Jet">Ask about this boat</a>
+            <a class="btn primary" href="/contact?model=Center+Console+Jon">Ask about this boat</a>
             <a class="btn" href="/custom-build">Build your own</a>
           </div>
         </div>
@@ -239,7 +239,7 @@ MODELS_BODY = f"""
   </main>
 """
 page("models", "Models | Unreel Custom Boats",
-     "The Unreel Center Console Jet: a welded aluminum jet boat built to order in Nelson, BC.", "models", MODELS_BODY)
+     "The Unreel Center Console Jon: a welded aluminum jet boat built to order in Nelson, BC.", "models", MODELS_BODY)
 
 
 # ---------- Gallery ----------
@@ -420,7 +420,7 @@ CONTACT = f"""
           <label for="model">Model</label>
           <select id="model" name="model">
             <option value="Not sure yet">Not sure yet</option>
-            <option value="Center Console Jet">Center Console Jet</option>
+            <option value="Center Console Jon">Center Console Jon</option>
             <option value="Custom build">Custom build</option>
           </select>
         </div>
@@ -433,13 +433,11 @@ CONTACT = f"""
             </select>
           </div>
           <div class="field">
-            <label for="layout">Layout</label>
+            <label for="layout">Console position</label>
             <select id="layout" name="layout">
               <option value="Not sure yet">Not sure yet</option>
-              <option>Tiller</option>
-              <option>Side console</option>
-              <option>Center console</option>
-              <option>Walk-through windshield</option>
+              <option>Front console</option>
+              <option>Middle console</option>
             </select>
           </div>
         </div>
