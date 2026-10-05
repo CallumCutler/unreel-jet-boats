@@ -75,8 +75,8 @@
   // ---------- Cross-section icons for hull cards ----------
   function section(bottom) {
     var paths = {
-      jon:   "M7.6 14 L30 46 L90 46 L112.4 14",          // sides flared 35° out from vertical
-      sled:  "M8.0 12 L30.4 44 Q32.6 48 37 48 L83 48 Q87.4 48 89.6 44 L112.0 12",  // sides flared 35°, rounded chines
+      jon:   "M15.8 14 L30 46 L90 46 L104.2 14",          // sides at 66° from the bottom
+      sled:  "M16.2 12 L30.4 44 Q32.2 48 36 48 L84 48 Q87.8 48 89.6 44 L103.8 12",  // sides at 66° from the bottom, rounded chines
       modv:  "M10 12 L16 40 L60 50 L104 40 L110 12",
       deepv: "M10 10 L22 30 L60 54 L98 30 L110 10"
     };
