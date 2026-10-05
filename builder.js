@@ -39,11 +39,10 @@
       options: function (s) {
         return LAYOUTS;
       } },
-    { key: "seating", title: "Seating & storage", type: "multi",
-      intro: "Pick everything you want. Skip anything you're not sure about.",
+    { key: "seating", title: "Seating", type: "multi",
+      intro: "Pick one or both. Skip it if you're not sure yet.",
       options: function () {
-        return ["Pedestal seats", "Bench seating", "Flip-up stern seats", "Front casting deck",
-                "Dry storage boxes", "Rod lockers", "Livewell", "Cooler mount"].map(function (x) { return { id: x }; });
+        return ["Stern jump seats", "Pedestal seats"].map(function (x) { return { id: x }; });
       } },
     { key: "finish", title: "Finish", type: "finish",
       intro: "Choose a hull color and what goes on the floor." },
