@@ -7,7 +7,7 @@
 
   // ---------- Options (filler content — edit freely) ----------
   var HULLS = [
-    { id: "Jon", blurb: "Flat bottom, wide and stable. The shallowest draft for creeks, backwaters and calm water.", lengths: range(10, 18), bottom: "jon" },
+    { id: "Jon", blurb: "Flat bottom, wide and stable. The shallowest draft for creeks, backwaters and calm water.", lengths: [10, 12, 14, 16, 18], bottom: "jon" },
     { id: "Sled", blurb: "Flat bottom with a long, raked bow. The classic river jet for skinny, fast water.", lengths: range(14, 20), bottom: "sled" },
     { id: "Mod V", blurb: "A V at the bow that flattens toward the stern. Rides softer in chop and still runs shallow.", lengths: range(14, 22), bottom: "modv" },
     { id: "Deep V", blurb: "A sharp V the full length. Best on big lakes and rough water, and needs more depth to run.", lengths: range(16, 24), bottom: "deepv" }
