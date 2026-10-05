@@ -85,6 +85,28 @@
       '<path d="' + paths[bottom] + '" class="xsec-hull"/></svg>';
   }
 
+  // Side profiles: stern on the left, bow on the right, waterline at y=40.
+  function profile(bottom) {
+    var paths = {
+      // flat bottom, low sides, short square-raked bow
+      jon:   "M8 22 L150 22 L126 46 L8 46 Z",
+      // flat bottom, long sweeping raked bow rising well above the sheer
+      sled:  "M8 20 L120 18 L152 10 Q138 30 112 46 L8 46 Z",
+      // bottom curves up into a moderate V entry at the bow
+      modv:  "M8 18 L126 14 Q146 12 152 16 Q140 38 110 48 L8 48 Z",
+      // deeper hull, sharp high bow, keel running deep forward
+      deepv: "M8 14 L120 9 Q146 6 154 10 Q144 40 104 54 L8 52 Z"
+    };
+    return '<svg class="xsec xprof" viewBox="0 0 160 60" aria-hidden="true">' +
+      '<line x1="0" y1="40" x2="160" y2="40" class="xsec-wl"/>' +
+      '<path d="' + paths[bottom] + '" class="xsec-hull"/></svg>';
+  }
+
+  function hullViews(bottom) {
+    return '<span class="views"><span class="view">' + section(bottom) + '<span class="view-l">End</span></span>' +
+      '<span class="view">' + profile(bottom) + '<span class="view-l">Side</span></span></span>';
+  }
+
   // ---------- Step rendering ----------
   function renderStepper() {
     stepper.innerHTML = STEPS.map(function (s, i) {
@@ -114,7 +136,7 @@
 
     if (s.type === "hull") {
       html += '<div class="opts opts-cards">' + HULLS.map(function (h) {
-        return choiceButton(h, state.hull === h.id, false, section(h.bottom)) .replace('<span class="opt-blurb">',
+        return choiceButton(h, state.hull === h.id, false, hullViews(h.bottom)).replace('<span class="opt-blurb">',
           '<span class="opt-meta">' + h.lengths[0] + "–" + h.lengths[h.lengths.length - 1] + ' ft</span><span class="opt-blurb">');
       }).join("") + "</div>";
     } else if (s.type === "length") {

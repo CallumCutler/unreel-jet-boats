@@ -260,3 +260,11 @@ dialog#viewer::backdrop{background:rgba(0,0,0,.85)}
 @media (max-width:820px){.model-feature .model-photo img{aspect-ratio:4/3}}
 .model-body{display:grid;gap:16px;align-content:center;min-width:0;padding:clamp(4px,2vw,20px)}
 .model .model-name{font-size:clamp(2.6rem,6vw,4.2rem);font-weight:900;line-height:.9;background:var(--iri);-webkit-background-clip:text;background-clip:text;color:transparent;justify-self:start}
+
+/* hull card views: end section + side profile */
+.views{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap}
+.view{display:grid;gap:4px;justify-items:start}
+.view-l{font:500 .62rem/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.xprof{width:116px;height:44px}
+.views .xsec:not(.xprof){width:80px;height:40px}
+.views{flex-wrap:nowrap}
