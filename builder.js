@@ -7,7 +7,8 @@
 
   // ---------- Options (filler content — edit freely) ----------
   var HULLS = [
-    { id: "Jon", blurb: "Flat bottom, wide and stable. The shallowest draft for creeks, backwaters and calm water.", lengths: [10, 12, 14, 16, 18], bottom: "jon" },
+    { id: "Jon", blurb: "Flat bottom, wide and stable. The shallowest draft for creeks, backwaters and calm water.", lengths: [10, 12, 14, 16, 18], bottom: "jon",
+      bottomWidths: { 10: 36, 12: 36, 14: 48, 16: 54, 18: 60 } },  // bottom (base) width in inches per length
     { id: "Sled", blurb: "Flat bottom with a long, raked bow. The classic river jet for skinny, fast water.", lengths: range(14, 20), bottom: "sled" },
     { id: "Mod V", blurb: "A V at the bow that flattens toward the stern. Rides softer in chop and still runs shallow.", lengths: range(14, 22), bottom: "modv" },
     { id: "Deep V", blurb: "A sharp V the full length. Best on big lakes and rough water, and needs more depth to run.", lengths: range(16, 24), bottom: "deepv" }
@@ -33,7 +34,7 @@
     { key: "hull", title: "Hull style", type: "hull", required: true,
       intro: "Start with the hull. It decides how the boat rides and how shallow it can run." },
     { key: "length", title: "Length", type: "length", required: true,
-      intro: "Pick a length. Only the lengths built on your hull style are shown." },
+      intro: "Pick a length. Only the lengths built on your hull style are shown, with the bottom width where it changes by length." },
     { key: "layout", title: "Layout", type: "single",
       intro: "How do you want to drive it?",
       options: function (s) {
@@ -69,6 +70,17 @@
   var panel = $("panel"), stepper = $("stepper"), back = $("back"), next = $("next"),
       send = $("send"), contact = $("contact-block"), err = $("step-error");
 
+  // "14 ft" plus the bottom width when the hull lists one, e.g. "14 ft · 48\" bottom"
+  function lengthLabel(n) {
+    if (!n) return "";
+    var h = state.hull && hullById(state.hull), b = h && h.bottomWidths && h.bottomWidths[n];
+    return n + " ft" + (b ? " \u00b7 " + b + "\" bottom" : "");
+  }
+  function bottomRange(h) {
+    if (!h.bottomWidths) return "";
+    var w = h.lengths.map(function (n) { return h.bottomWidths[n]; }).filter(Boolean);
+    return " \u00b7 " + Math.min.apply(null, w) + "\u2013" + Math.max.apply(null, w) + "&quot; bottom";
+  }
   function hullById(id) { return HULLS.filter(function (h) { return h.id === id; })[0]; }
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
@@ -137,12 +149,14 @@
     if (s.type === "hull") {
       html += '<div class="opts opts-cards">' + HULLS.map(function (h) {
         return choiceButton(h, state.hull === h.id, false, hullViews(h.bottom)).replace('<span class="opt-blurb">',
-          '<span class="opt-meta">' + h.lengths[0] + "–" + h.lengths[h.lengths.length - 1] + ' ft</span><span class="opt-blurb">');
+          '<span class="opt-meta">' + h.lengths[0] + "–" + h.lengths[h.lengths.length - 1] + ' ft' + bottomRange(h) + '</span><span class="opt-blurb">');
       }).join("") + "</div>";
     } else if (s.type === "length") {
       var h = hullById(state.hull);
       html += '<div class="opts opts-chips">' + h.lengths.map(function (n) {
-        return '<button type="button" class="chip' + (state.length === n ? " is-on" : "") + '" data-val="' + n + '" aria-pressed="' + (state.length === n) + '">' + n + " ft</button>";
+        var bw = h.bottomWidths && h.bottomWidths[n];
+        return '<button type="button" class="chip' + (bw ? " chip-2" : "") + (state.length === n ? " is-on" : "") + '" data-val="' + n + '" aria-pressed="' + (state.length === n) + '">' + n + " ft" +
+          (bw ? '<span class="chip-sub">' + bw + '&quot; bottom</span>' : "") + "</button>";
       }).join("") + "</div>";
     } else if (s.type === "single" || s.type === "multi") {
       var opts = s.options(state), multi = s.type === "multi";
@@ -177,7 +191,7 @@
   }
 
   function valueFor(key) {
-    if (key === "length") return state.length ? state.length + " ft" : "";
+    if (key === "length") return lengthLabel(state.length);
     if (key === "finish") return [state.color, state.floor].filter(Boolean).join(", ");
     var v = state[key];
     return Array.isArray(v) ? v.join(", ") : (v || "");
@@ -191,7 +205,7 @@
     var color = COLORS.filter(function (c) { return c.id === state.color; })[0];
     var fill = color && color.hex ? color.hex : "var(--metal)";
     var d;
-    if (type === "jon") d = "M" + x0 + " " + top + " L" + (x1 - 8) + " " + top + " L" + (x1 + 4) + " " + (top + 14) + " L" + (x1 - 26) + " " + bot + " L" + x0 + " " + bot + " Z";
+    if (type === "jon") d = "M" + x0 + " " + top + " L" + (x1 + 4) + " " + top + " Q" + (x1 - L * 0.08) + " " + bot + " " + (x1 - L * 0.32) + " " + bot + " L" + x0 + " " + bot + " Z";
     else if (type === "sled") d = "M" + x0 + " " + top + " L" + (x1 + 6) + " " + (top - 8) + " L" + (x1 - L * 0.24) + " " + bot + " L" + x0 + " " + bot + " Z";
     else if (type === "deepv") { top = 104; bot = 176; d = "M" + x0 + " " + top + " L" + (x1 - 26) + " " + (top - 12) + " Q" + x1 + " " + (top - 14) + " " + (x1 + 8) + " " + (top - 2) + " Q" + (x1 - 26) + " " + (bot - 4) + " " + (x1 - L * 0.3) + " " + bot + " L" + x0 + " " + bot + " Z"; }
     else d = "M" + x0 + " " + top + " L" + (x1 - 22) + " " + (top - 8) + " Q" + x1 + " " + (top - 10) + " " + (x1 + 6) + " " + top + " Q" + (x1 - 20) + " " + (bot - 4) + " " + (x1 - L * 0.22) + " " + bot + " L" + x0 + " " + bot + " Z";
@@ -217,14 +231,14 @@
     g += '<text x="' + ((x0 + x1) / 2) + '" y="240" text-anchor="middle">' + (state.length ? state.length + " FT" : "LENGTH") + "</text>";
     $("boat").innerHTML = g;
 
-    $("summary").innerHTML = [["Hull", state.hull], ["Length", state.length ? state.length + " ft" : ""], ["Layout", state.layout], ["Color", state.color]]
+    $("summary").innerHTML = [["Hull", state.hull], ["Length", lengthLabel(state.length)], ["Layout", state.layout], ["Color", state.color]]
       .map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + esc(r[1] || "—") + "</dd></div>"; }).join("");
   }
 
   // ---------- Hidden form fields ----------
   function syncForm() {
     $("f-hull").value = state.hull || "";
-    $("f-length").value = state.length ? state.length + " ft" : "";
+    $("f-length").value = lengthLabel(state.length);
     $("f-layout").value = state.layout || "";
     $("f-seating").value = state.seating.join(", ");
     $("f-color").value = state.color || "";
