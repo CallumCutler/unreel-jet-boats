@@ -210,31 +210,36 @@ for key, (name, line) in SOON.items():
 
 
 # ---------- Models ----------
-MODELS = [
-    ("1654", "1654 Center Console Jet"),
-    ("1860", "1860 Center Console Jet"),
-]
-cards = "".join(f"""
-      <article class="model">
-        <span class="model-no">{no}</span>
-        <h2>{name}</h2>
-        <ul class="tags"><li>Center console</li><li>Jet</li><li>Welded aluminum</li></ul>
-        <p class="muted">Full spec sheet coming soon. Ask us about sizing, seating and options for this model.</p>
-        <a class="btn primary" href="/contact?model={no}">Ask about the {no}</a>
-      </article>""" for no, name in MODELS)
+cards = """
+      <article class="model model-feature">
+        <figure class="model-photo">
+          <picture><source srcset="/img/gravel-bar.webp" type="image/webp"><img src="/img/gravel-bar.jpg" alt="Center Console Jet pulled up on a gravel bar in a BC river" width="1400" height="1867"></picture>
+        </figure>
+        <div class="model-body">
+          <span class="label">Model</span>
+          <h2 class="model-name">Center Console Jet</h2>
+          <ul class="tags"><li>Center console</li><li>Outboard jet</li><li>Welded aluminum</li></ul>
+          <p class="muted">A welded aluminum center console built to run shallow rivers and big lakes. Built to order in Nelson, BC, with the length, seating and options set around how you run.</p>
+          <p class="muted">Full spec sheet coming soon.</p>
+          <div class="btns">
+            <a class="btn primary" href="/contact?model=Center+Console+Jet">Ask about this boat</a>
+            <a class="btn" href="/custom-build">Build your own</a>
+          </div>
+        </div>
+      </article>"""
 MODELS_BODY = f"""
   <main class="models-page">
     <div class="head">
       <span class="label">Models</span>
       <h1>The lineup</h1>
-      <p class="muted">Every boat is built to order. Start from one of these models, or tell us what you need and we'll build it custom.</p>
+      <p class="muted">Every boat is built to order. Start from this model, or tell us what you need and we'll build it custom.</p>
     </div>
     <div class="model-grid">{cards}
     </div>
   </main>
 """
 page("models", "Models | Unreel Custom Boats",
-     "Unreel Custom Boats models: the 1654 and 1860 Center Console Jet.", "models", MODELS_BODY)
+     "The Unreel Center Console Jet: a welded aluminum jet boat built to order in Nelson, BC.", "models", MODELS_BODY)
 
 
 # ---------- Gallery ----------
@@ -415,8 +420,7 @@ CONTACT = f"""
           <label for="model">Model</label>
           <select id="model" name="model">
             <option value="Not sure yet">Not sure yet</option>
-            <option value="1654">1654 Center Console Jet</option>
-            <option value="1860">1860 Center Console Jet</option>
+            <option value="Center Console Jet">Center Console Jet</option>
             <option value="Custom build">Custom build</option>
           </select>
         </div>
