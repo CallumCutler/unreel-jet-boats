@@ -65,8 +65,8 @@ nav :focus-visible{outline-color:var(--accent)}
 .hero h1 em{font-style:normal;background:var(--iri);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero-copy p{font-size:1.2rem;color:var(--muted);max-width:42ch}
 .hero-photo{margin:0;min-width:0}
-.hero-photo img{display:block;width:100%;height:auto;aspect-ratio:5/4;object-fit:cover;object-position:50% 50%;border-radius:2px}
-@media (max-width:820px){.hero-photo img{aspect-ratio:5/4}}
+.hero-photo img{display:block;width:100%;height:auto;border-radius:2px}
+
 
 /* photo strip */
 .photos{margin-top:44px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
