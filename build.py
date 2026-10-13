@@ -53,6 +53,25 @@ FOOT = """  <footer>
     <span class="foot-contact"><a href="tel:+12505516136">250-551-6136</a><a href="mailto:unreelboats@gmail.com">unreelboats@gmail.com</a></span>
   </footer>
 </div>
+<script>
+  // Load and play the walk-around clip only once it scrolls into view; respect reduced motion.
+  (function(){
+    var vids=document.querySelectorAll('video.lazy-video'); if(!vids.length) return;
+    var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function start(v){
+      v.querySelectorAll('source[data-src]').forEach(function(s){ s.src=s.dataset.src; s.removeAttribute('data-src'); });
+      v.load();
+      if(still){ v.controls=true; } else { var p=v.play(); if(p&&p.catch) p.catch(function(){ v.controls=true; }); }
+    }
+    if(!('IntersectionObserver' in window)){ vids.forEach(start); return; }
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){
+      var v=e.target;
+      if(e.isIntersecting){ if(v.querySelector('source[data-src]')) start(v); else if(!still) v.play().catch(function(){}); }
+      else if(!v.paused){ v.pause(); }
+    }); },{rootMargin:'200px 0px'});
+    vids.forEach(function(v){ io.observe(v); });
+  })();
+</script>
 </body>
 </html>
 """
@@ -77,6 +96,24 @@ HOME = """
       <picture><source srcset="/img/side-profile.webp" type="image/webp"><img src="/img/side-profile.jpg" alt="Black Unreel Custom Boats center console jon in shallow water on a BC river gravel bar" width="1400" height="1400" fetchpriority="high"></picture>
     </figure>
   </header>
+
+  <section id="walkaround" class="walk">
+    <div class="walk-media">
+        <video class="lazy-video" muted loop playsinline preload="none" poster="/video/walkaround-poster.jpg" aria-label="Walk-around video of a black Unreel center console jon floating in clear shallow water">
+          <source data-src="/video/walkaround.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div class="walk-copy">
+      <span class="label">On the water</span>
+      <h2>Walk around the Center Console Jon</h2>
+      <p class="muted">Welded aluminum, a clean jet transom and a console set where you want it. Built in Nelson and run on clear BC water.</p>
+      <ul class="tags"><li>Center console</li><li>Outboard jet</li><li>Welded aluminum</li></ul>
+      <div class="btns">
+        <a class="btn primary" href="/custom-build">Build your own</a>
+        <a class="btn" href="/models">See the model</a>
+      </div>
+    </div>
+  </section>
 
   <section id="why">
     <div class="head">
@@ -265,7 +302,13 @@ GALLERY_BODY = f"""
       <h1>On the water</h1>
       <p class="muted">Boats from the shop, out on BC rivers and lakes.</p>
     </div>
-    <div class="gallery">{tiles}
+    <div class="gallery">
+      <figure class="gallery-video">
+      <video class="lazy-video" muted loop playsinline preload="none" poster="/video/walkaround-poster.jpg" aria-label="Walk-around video of a black Unreel center console jon floating in clear shallow water">
+        <source data-src="/video/walkaround.mp4" type="video/mp4">
+      </video>
+      <figcaption>Walk-around on the water</figcaption>
+    </figure>{tiles}
     </div>
   </main>
   <dialog id="viewer" aria-label="Photo viewer">

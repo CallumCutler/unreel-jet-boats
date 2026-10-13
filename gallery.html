@@ -32,6 +32,12 @@
       <p class="muted">Boats from the shop, out on BC rivers and lakes.</p>
     </div>
     <div class="gallery">
+      <figure class="gallery-video">
+      <video class="lazy-video" muted loop playsinline preload="none" poster="/video/walkaround-poster.jpg" aria-label="Walk-around video of a black Unreel center console jon floating in clear shallow water">
+        <source data-src="/video/walkaround.mp4" type="video/mp4">
+      </video>
+      <figcaption>Walk-around on the water</figcaption>
+    </figure>
       <figure>
         <button type="button" class="tile" data-src="/img/gravel-bar.jpg" data-cap="On the gravel bar" aria-label="Open photo: On the gravel bar">
           <picture><source srcset="/img/gravel-bar.webp" type="image/webp"><img src="/img/gravel-bar.jpg" alt="Boat nosed up on a gravel bar in a clear BC river while an angler casts nearby" width="1400" height="1867" loading="lazy"></picture>
@@ -92,5 +98,24 @@
     <span class="foot-contact"><a href="tel:+12505516136">250-551-6136</a><a href="mailto:unreelboats@gmail.com">unreelboats@gmail.com</a></span>
   </footer>
 </div>
+<script>
+  // Load and play the walk-around clip only once it scrolls into view; respect reduced motion.
+  (function(){
+    var vids=document.querySelectorAll('video.lazy-video'); if(!vids.length) return;
+    var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function start(v){
+      v.querySelectorAll('source[data-src]').forEach(function(s){ s.src=s.dataset.src; s.removeAttribute('data-src'); });
+      v.load();
+      if(still){ v.controls=true; } else { var p=v.play(); if(p&&p.catch) p.catch(function(){ v.controls=true; }); }
+    }
+    if(!('IntersectionObserver' in window)){ vids.forEach(start); return; }
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){
+      var v=e.target;
+      if(e.isIntersecting){ if(v.querySelector('source[data-src]')) start(v); else if(!still) v.play().catch(function(){}); }
+      else if(!v.paused){ v.pause(); }
+    }); },{rootMargin:'200px 0px'});
+    vids.forEach(function(v){ io.observe(v); });
+  })();
+</script>
 </body>
 </html>
