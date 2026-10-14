@@ -101,22 +101,23 @@
   </footer>
 </div>
 <script>
-  // Load and play the walk-around clip only once it scrolls into view; respect reduced motion.
+  // Walk-around clip: load when it nears the screen, then autoplay silently on a loop.
+  // If the phone blocks autoplay (e.g. iPhone Low Power Mode), start it on the visitor's first tap.
   (function(){
-    var vids=document.querySelectorAll('video.lazy-video'); if(!vids.length) return;
-    var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function start(v){
-      v.querySelectorAll('source[data-src]').forEach(function(s){ s.src=s.dataset.src; s.removeAttribute('data-src'); });
-      v.load();
-      if(still){ v.controls=true; } else { var p=v.play(); if(p&&p.catch) p.catch(function(){ v.controls=true; }); }
+    var vids=[].slice.call(document.querySelectorAll('video.lazy-video')); if(!vids.length) return;
+    function load(v){
+      var s=v.querySelector('source[data-src]'); if(!s) return;
+      s.src=s.dataset.src; s.removeAttribute('data-src'); v.load();
     }
-    if(!('IntersectionObserver' in window)){ vids.forEach(start); return; }
+    function play(v){ v.muted=true; v.defaultMuted=true; var p=v.play(); if(p&&p.catch) p.catch(function(){}); }
+    function kick(){ vids.forEach(function(v){ if(!v.querySelector('source[data-src]') && v.paused) play(v); }); }
+    ['touchend','click','keydown'].forEach(function(ev){ document.addEventListener(ev,kick,{passive:true}); });
+    if(!('IntersectionObserver' in window)){ vids.forEach(function(v){ load(v); play(v); }); return; }
     var io=new IntersectionObserver(function(es){ es.forEach(function(e){
       var v=e.target;
-      if(e.isIntersecting){ if(v.querySelector('source[data-src]')) start(v); else if(!still) v.play().catch(function(){}); }
-      else if(!v.paused){ v.pause(); }
-    }); },{rootMargin:'200px 0px'});
-    vids.forEach(function(v){ io.observe(v); });
+      if(e.isIntersecting){ load(v); play(v); } else if(!v.paused){ v.pause(); }
+    }); },{rootMargin:'300px 0px'});
+    vids.forEach(function(v){ v.muted=true; io.observe(v); });
   })();
 </script>
 </body>
