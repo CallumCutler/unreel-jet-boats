@@ -275,7 +275,7 @@ dialog#viewer::backdrop{background:rgba(0,0,0,.85)}
 .chip.is-on .chip-sub{color:inherit;opacity:.75}
 
 /* walk-around video */
-.walk{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr);gap:clamp(28px,5vw,64px);align-items:center}
+.walk{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr);gap:clamp(28px,5vw,64px);align-items:center}
 @media (max-width:820px){.walk{grid-template-columns:1fr}}
 .walk-media{min-width:0;justify-self:center;width:100%;max-width:440px}
 .walk-media video{display:block;width:100%;height:auto;aspect-ratio:9/16;object-fit:cover;background:#000;border-radius:2px}

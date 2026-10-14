@@ -98,11 +98,6 @@ HOME = """
   </header>
 
   <section id="walkaround" class="walk">
-    <div class="walk-media">
-        <video class="lazy-video" muted loop playsinline preload="none" poster="/video/walkaround-poster.jpg" aria-label="Walk-around video of a black Unreel center console jon floating in clear shallow water">
-          <source data-src="/video/walkaround.mp4" type="video/mp4">
-        </video>
-    </div>
     <div class="walk-copy">
       <span class="label">On the water</span>
       <h2>Walk around the Center Console Jon</h2>
@@ -112,6 +107,11 @@ HOME = """
         <a class="btn primary" href="/custom-build">Build your own</a>
         <a class="btn" href="/models">See the model</a>
       </div>
+    </div>
+    <div class="walk-media">
+        <video class="lazy-video" muted loop playsinline preload="none" poster="/video/walkaround-poster.jpg" aria-label="Walk-around video of a black Unreel center console jon floating in clear shallow water">
+          <source data-src="/video/walkaround.mp4" type="video/mp4">
+        </video>
     </div>
   </section>
 
