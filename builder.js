@@ -14,7 +14,7 @@
 
   // Console position — every boat is a center console jet
   var LAYOUTS = [
-    { id: "Front console", blurb: "Console set forward. Opens up a big back deck for fishing, gear and passengers.", pos: 0.64 },
+    { id: "Front console", blurb: "Console set forward. Opens up a big back deck for fishing, gear and passengers.", pos: 0.64 },   // forward base on the front deck, aft edge (drawing sheet 12)
     { id: "Middle console", blurb: "Console in the middle. Balanced ride and walk-around room at both ends.", pos: 0.5 }
   ];
 
@@ -55,8 +55,11 @@
       options: function () {
         return ["Dry storage hatches", "Rod lockers", "Under-console storage", "Livewell", "Cockpit mounted Yeti"].map(function (x) { return { id: x }; });
       } },
-    { key: "finish", title: "Finish", type: "finish",
-      intro: "Choose a hull color and what goes on the floor." },
+    { key: "color", title: "Hull colour", type: "finish",
+      intro: "Choose a hull colour." },
+    { key: "floor", title: "Flooring", type: "single",
+      intro: "Choose what covers the decks and cockpit floor. The top view shows the layout.",
+      options: function () { return FLOORS; } },
     { key: "extras", title: "Extras", type: "multi",
       intro: "Add-ons and accessories. Anything not listed, add it in your notes at the end.",
       options: function () {
@@ -67,7 +70,10 @@
       intro: "Check your picks, add your details, and send it over. We'll get back to you to talk it through." }
   ];
 
-  var FLOORS = ["EVA foam marine floor", "Grip particles"];
+  var FLOORS = [
+    { id: "EVA foam marine floor", blurb: "Closed-cell EVA foam cut to your deck layout, with grooved borders around every hatch. Soft and quiet underfoot, non-skid wet or dry." },
+    { id: "Grip particles", blurb: "A hard-wearing grip particle non-skid coating on the decks and floor. Tough and easy to hose out." }
+  ];
 
   // ---------- State ----------
   var state = { hull: null, length: null, pods: null, layout: null, seating: [], storage: [], color: "Raw aluminum", floor: null, extras: [] };
@@ -156,6 +162,9 @@
         '<stop offset="0" stop-color="#14323f" stop-opacity=".82"/><stop offset="1" stop-color="#06131a" stop-opacity=".96"/></linearGradient>' +
       '<linearGradient id="g-seat" x1="0" y1="0" x2="0" y2="1">' +
         '<stop offset="0" stop-color="#5a5f66"/><stop offset="1" stop-color="#1d2024"/></linearGradient>' +
+      '<pattern id="g-grip" width="7" height="7" patternUnits="userSpaceOnUse">' +
+        '<rect width="7" height="7" fill="#55595e"/><circle cx="1.2" cy="1.5" r=".55" fill="#7c8187"/><circle cx="4.6" cy="2.8" r=".45" fill="#3b3e42"/>' +
+        '<circle cx="2.8" cy="5.4" r=".5" fill="#80858b"/><circle cx="6" cy="6" r=".4" fill="#3b3e42"/><circle cx="5.6" cy=".6" r=".35" fill="#8a8f95"/></pattern>' +
       '<filter id="g-blur" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="1.6"/></filter>' +
       '</defs>';
     document.body.appendChild(d);
@@ -174,8 +183,8 @@
       // pods run ~7.5% of hull length past the transom: raked aft face, big round-over into the deck
       stern = "M" + P(-0.051, 1) + " L" + P(-0.075, 0.35) + " Q" + P(-0.072, 0) + " " + P(0.012, 0);
     } else {
-      // straight, flush transom
-      stern = "M" + xT.toFixed(1) + " " + bot + " L" + P(0, 0);
+      // transom raked 15 degrees: top aft, bottom forward
+      stern = "M" + (xT + H * Math.tan(15 * Math.PI / 180)).toFixed(1) + " " + bot + " L" + P(0, 0);
     }
     if (type === "sled") {
       bow = " L" + P(0.84, 0) + " L" + P(1, -0.30) + " C" + P(0.92, 0.32) + " " + P(0.80, 1) + " " + P(0.62, 1);
@@ -253,14 +262,10 @@
         return choiceButton(o, on, multi);
       }).join("") + "</div>";
     } else if (s.type === "finish") {
-      html += '<h3 class="sub">Hull color</h3><div class="opts opts-swatches">' + COLORS.map(function (c) {
+      html += '<div class="opts opts-swatches">' + COLORS.map(function (c) {
         var on = state.color === c.id;
         return '<button type="button" class="swatch' + (on ? " is-on" : "") + '" data-group="color" data-val="' + esc(c.id) + '" aria-pressed="' + on + '">' +
           '<span class="dot" style="background:' + (c.hex || "var(--metal)") + '"></span>' + esc(c.id) + "</button>";
-      }).join("") + "</div>";
-      html += '<h3 class="sub">Floor</h3><div class="opts opts-chips">' + FLOORS.map(function (f) {
-        var on = state.floor === f;
-        return '<button type="button" class="chip' + (on ? " is-on" : "") + '" data-group="floor" data-val="' + esc(f) + '" aria-pressed="' + on + '">' + esc(f) + "</button>";
       }).join("") + "</div>";
     } else if (s.type === "review") {
       html += '<dl class="review">' + STEPS.slice(0, -1).map(function (st, i) {
@@ -280,9 +285,174 @@
 
   function valueFor(key) {
     if (key === "length") return lengthLabel(state.length);
-    if (key === "finish") return [state.color, state.floor].filter(Boolean).join(", ");
     var v = state[key];
     return Array.isArray(v) ? v.join(", ") : (v || "");
+  }
+
+
+  // Inches-to-pixels for the side view: hull side height 21-5/8" = (bot - top).
+  // Deck tops sit 5" below the sheer; pedestal sockets on the centreline (sheet 10).
+  function interiorSide(x0, L, top, bot) {
+    var sc = (bot - top) / 21.625, deck = top + 5 * sc, g = "";
+    function X(u) { return x0 + u * L; }
+    function pedestal(px) {
+      var seatY = deck - 21 * sc;
+      return '<rect x="' + (px - 1.6) + '" y="' + seatY + '" width="3.2" height="' + (deck - seatY) + '" fill="#b9bec2"/>' +
+        '<rect x="' + (px - 6) + '" y="' + (deck - 2) + '" width="12" height="2" fill="#8d9297"/>' +
+        '<path d="M' + (px - 10 * sc) + " " + seatY + " h" + (17 * sc) + " q" + (2 * sc) + " 0 " + (2 * sc) + " " + (2 * sc) + " v" + (2.5 * sc) + " h-" + (19 * sc) + " v-" + (2.5 * sc) + " q0 -" + (2 * sc) + " " + (1 * sc) + " -" + (2 * sc) + ' Z" fill="url(#g-seat)"/>' +
+        '<path d="M' + (px - 10 * sc) + " " + seatY + " l-" + (2.5 * sc) + " -" + (14 * sc) + " q0 -" + (1.5 * sc) + " " + (1.5 * sc) + " -" + (1.5 * sc) + " h" + (3 * sc) + " l" + (2.5 * sc) + " " + (15.5 * sc) + ' Z" fill="url(#g-seat)"/>';
+    }
+    if (state.seating.indexOf("Pedestal seats") > -1) {
+      g += pedestal(X(0.15));    // back deck socket
+      g += pedestal(X(0.758));   // front deck socket
+    }
+    // stern jump seats fold flush into the deck, so they don't change the side view
+
+    var lay = LAYOUTS.filter(function (o) { return o.id === state.layout; })[0];
+    if (lay) {
+      // Console side profile from sheet 12 (CN-1): 29" tall, 10" on the deck, lower face leaning aft over the cockpit,
+      // sloped dash, short ledge, steep upper face, 4" top, front face leaning aft slightly. Coordinates in inches from the forward base.
+      var xf = X(lay.pos), C = function (ix, iy) { return (xf + ix * sc).toFixed(1) + " " + (deck - iy * sc).toFixed(1); };
+      var con = "M" + C(-10, 0) + " L" + C(-18, 14.9) + " L" + C(-10.4, 21.05) + " L" + C(-7.6, 21.05) + " L" + C(-5.5, 29) +
+        " L" + C(-2.1, 29) + " L" + C(0, 0) + " Z";
+      g += '<path d="' + con + '" fill="url(#g-console)" stroke="#050607" stroke-width="1"/>';
+      g += '<path d="M' + C(-18, 14.9) + " L" + C(-10.4, 21.05) + '" stroke="#5e646b" stroke-width="1.4"/>';   // dash top edge
+      g += '<path d="M' + C(-7.6, 21.05) + " L" + C(-5.5, 29) + " L" + C(-2.1, 29) + '" stroke="#4a5057" stroke-width="1.1" fill="none"/>';
+      // Mercury remote control on the ledge
+      g += '<path d="M' + C(-9.4, 21.05) + " l" + (-1.5 * sc) + " " + (-4 * sc) + " h" + (2 * sc) + '" stroke="#1d2024" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+      // steering wheel on the dash, seen nearly edge-on
+      var mxi = -14.2, myi = 17.98, ang = Math.atan2(-(21.05 - 14.9), 7.6) * 180 / Math.PI;
+      var mx = xf + mxi * sc, my = deck - myi * sc, rad = ang * Math.PI / 180, nx = Math.sin(rad), ny = -Math.cos(rad);
+      if (nx > 0) { nx = -nx; ny = -ny; }
+      var wx = mx + nx * 3.2 * sc, wy = my + ny * 3.2 * sc;
+      g += '<line x1="' + mx + '" y1="' + my + '" x2="' + wx + '" y2="' + wy + '" stroke="#8d939a" stroke-width="2.2"/>';
+      g += '<ellipse cx="' + wx + '" cy="' + wy + '" rx="' + (1 * sc) + '" ry="' + (6.5 * sc) + '" fill="none" stroke="#dfe3e6" stroke-width="2.4" transform="rotate(' + (ang + 90) + ' ' + wx + ' ' + wy + ')"/>';
+      g += '<circle cx="' + wx + '" cy="' + wy + '" r="2" fill="#aeb4ba"/>';
+      // grab bar around the top: up from the ledge, over the top, down the front face
+      var bx0 = xf - 9 * sc, bx1 = xf + 0.9 * sc, by = deck - 35 * sc, r = 2.5 * sc;
+      g += '<path d="M' + bx0 + " " + (deck - 21.05 * sc) + " L" + bx0 + " " + (by + r) + " Q" + bx0 + " " + by + " " + (bx0 + r) + " " + by +
+        " L" + (bx1 - r) + " " + by + " Q" + bx1 + " " + by + " " + bx1 + " " + (by + r) + " L" + bx1 + " " + (deck - 17 * sc) +
+        '" fill="none" stroke="#141619" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>';
+      if (state.seating.indexOf("Flip-down console front seat") > -1) {
+        g += '<path d="M' + C(0, 10) + " h" + (5 * sc) + " q" + (0.8 * sc) + " 0 " + (0.8 * sc) + " " + (0.8 * sc) + " v" + (1.2 * sc) + " h-" + (5.8 * sc) + ' Z" fill="url(#g-seat)"/>' +
+          '<path d="M' + C(0, 10) + " v-" + (6 * sc) + " h" + (1.2 * sc) + " v" + (6 * sc) + ' Z" fill="url(#g-seat)"/>';
+      }
+    }
+    return g;
+  }
+
+  // ---------- Top view (bird's-eye), lined up with the side view ----------
+  // Layout from the deck render and sheets 2 and 10. u = fraction of hull length from the transom, f = fraction of half-beam from the centreline.
+  function drawPlan(x0, L, pods) {
+    var len = state.length || 16, h = state.hull ? hullById(state.hull) : null;
+    var bottomIn = (h && h.bottomWidths && h.bottomWidths[len]) || 54;
+    var pxIn = L / (len * 12 * 0.912);              // transom-to-bow is ~91% of the overall length
+    var b = (bottomIn + 20) / 2 * pxIn, cy = 118;  // half-beam: beam is ~20" wider than the bottom (80" on the 60" bottom)
+    function X(u) { return (x0 + u * L).toFixed(1); }
+    function Y(f) { return (cy - f * b).toFixed(1); }
+    function outline(k, u0, tip) {
+      // side runs straight, then curves in to the bow deck, then straight to the stem
+      function side(sg) {
+        return " L" + X(0.55) + " " + Y(sg * k) + " C" + X(0.72) + " " + Y(sg * k) + " " + X(0.85) + " " + Y(sg * 0.78 * k) + " " + X(0.906) + " " + Y(sg * 0.65 * k);
+      }
+      return "M" + X(u0) + " " + Y(k) + side(1) + " L" + X(tip) + " " + cy +
+        " L" + X(0.906) + " " + Y(-0.65 * k) + " C" + X(0.85) + " " + Y(-0.78 * k) + " " + X(0.72) + " " + Y(-k) + " " + X(0.55) + " " + Y(-k) +
+        " L" + X(u0) + " " + Y(-k) + " Z";
+    }
+    var floor = state.floor, eva = floor === "EVA foam marine floor", grip = floor === "Grip particles";
+    var base = eva ? "#45484c" : grip ? "url(#g-grip)" : "url(#g-brushed)";
+    var recess = eva ? "#3b3e42" : grip ? "url(#g-grip)" : "#a9aeb2";
+    var groove = eva ? "#141618" : grip ? "#2a2d30" : "#7d8287";
+    function panel(u1, u2, f1, f2, fill, rr) {
+      var x = X(u1), w = (u2 - u1) * L, y = Y(Math.max(f1, f2)), hgt = Math.abs(f2 - f1) * b, o = "";
+      o += '<rect x="' + x + '" y="' + y + '" width="' + w.toFixed(1) + '" height="' + hgt.toFixed(1) + '" rx="' + (rr || 2) + '" fill="' + fill + '" stroke="' + groove + '" stroke-width="' + (eva ? 1.8 : 1) + '"/>';
+      if (eva) o += '<rect x="' + (+x + 2.2) + '" y="' + (+y + 2.2) + '" width="' + Math.max(0, w - 4.4).toFixed(1) + '" height="' + Math.max(0, hgt - 4.4).toFixed(1) + '" rx="' + Math.max(1, (rr || 2) - 1) + '" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width=".8"/>';
+      return o;
+    }
+    function hatch(u1, u2, f1, f2, holeU, holeF) {
+      var x = X(u1), w = (u2 - u1) * L, y = Y(Math.max(f1, f2)), hgt = Math.abs(f2 - f1) * b, o = "";
+      o += '<rect x="' + x + '" y="' + y + '" width="' + w.toFixed(1) + '" height="' + hgt.toFixed(1) + '" rx="3" fill="' + base + '" stroke="' + groove + '" stroke-width="2"/>';
+      if (eva) {
+        o += '<rect x="' + (+x + 2.5) + '" y="' + (+y + 2.5) + '" width="' + (w - 5).toFixed(1) + '" height="' + (hgt - 5).toFixed(1) + '" rx="2" fill="none" stroke="#d5d8db" stroke-width="1.1"/>';
+        o += '<rect x="' + (+x + 5) + '" y="' + (+y + 5) + '" width="' + (w - 10).toFixed(1) + '" height="' + (hgt - 10).toFixed(1) + '" rx="1.5" fill="none" stroke="#141618" stroke-width="1"/>';
+      }
+      o += '<circle cx="' + X(holeU) + '" cy="' + Y(holeF) + '" r="' + Math.max(2.4, b * 0.045).toFixed(1) + '" fill="#d9dcdf" stroke="#141618" stroke-width="1"/>';
+      return o;
+    }
+    var g = '<rect width="660" height="236" fill="#0e242f"/>';
+    g += '<text class="view-tag" x="14" y="20">TOP VIEW</text>';
+
+    // float pods out the back, with the motor between them
+    if (pods) {
+      [1, -1].forEach(function (sg) {
+        var yA = Y(sg * 0.97), yB = Y(sg * 0.34), top = Math.min(yA, yB), hh = Math.abs(yA - yB);
+        g += '<rect x="' + X(-0.072) + '" y="' + top + '" width="' + (0.08 * L).toFixed(1) + '" height="' + hh.toFixed(1) + '" rx="5" fill="#3a3d41" stroke="#c3c7ca" stroke-width="1.6"/>';
+      });
+    }
+    g += '<rect x="' + X(-0.07) + '" y="' + Y(0.16) + '" width="' + (0.075 * L).toFixed(1) + '" height="' + (0.32 * b).toFixed(1) + '" rx="6" fill="url(#g-motor)"/>';
+
+    // hull + gunwale
+    var color = COLORS.filter(function (c) { return c.id === state.color; })[0];
+    g += '<path d="' + outline(1.02, 0, 1.006) + '" fill="' + hullPaint(color && color.hex) + '"/>';
+    g += '<path d="' + outline(1, 0, 1) + '" fill="#cdd1d4" stroke="#8e9398" stroke-width="1"/>';
+    g += '<clipPath id="deck-clip"><path d="' + outline(0.93, 0.014, 0.975) + '"/></clipPath>';
+
+    // transom cap with the motor notch
+    g += '<rect x="' + X(0) + '" y="' + Y(0.93) + '" width="' + (0.014 * L).toFixed(1) + '" height="' + (1.86 * b).toFixed(1) + '" fill="#d6d9dc"/>';
+    g += '<rect x="' + X(0) + '" y="' + Y(0.17) + '" width="' + (0.014 * L).toFixed(1) + '" height="' + (0.34 * b).toFixed(1) + '" fill="#9aa0a5"/>';
+
+    var d = '<g clip-path="url(#deck-clip)">';
+    d += '<rect x="' + X(0) + '" y="' + Y(1) + '" width="' + L + '" height="' + (2 * b) + '" fill="' + base + '"/>';
+    // back deck: two panels split on the centreline, two hatches, pedestal socket
+    d += panel(0.014, 0.25, 0, 1.2, base) + panel(0.014, 0.25, -1.2, 0, base);
+    d += hatch(0.03, 0.143, 0.18, 0.84, 0.12, 0.51) + hatch(0.03, 0.143, -0.84, -0.18, 0.12, -0.51);
+    // cockpit: side shelves and the recessed floor
+    d += panel(0.25, 0.59, 0.76, 1.2, base) + panel(0.25, 0.59, -1.2, -0.76, base);
+    d += panel(0.257, 0.587, 0.78, 0.905, base, 4) + panel(0.257, 0.587, -0.905, -0.78, base, 4);
+    d += panel(0.263, 0.582, 0, 0.75, recess, 6) + panel(0.263, 0.582, -0.75, 0, recess, 6);
+    // front deck: two panels, two long hatches, pedestal socket
+    d += panel(0.59, 0.877, 0, 1.2, base) + panel(0.59, 0.877, -1.2, 0, base);
+    d += hatch(0.664, 0.819, 0.28, 0.70, 0.74, 0.57) + hatch(0.664, 0.819, -0.70, -0.28, 0.74, -0.57);
+    // riser band and bow deck
+    d += '<rect x="' + X(0.877) + '" y="' + Y(1) + '" width="' + (0.03 * L).toFixed(1) + '" height="' + (2 * b) + '" fill="' + (eva ? "#2e3134" : grip ? "#3a3d41" : "#9ca1a6") + '" stroke="' + groove + '"/>';
+    d += '<path d="M' + X(0.912) + " " + Y(0.55) + " L" + X(0.968) + " " + cy + " L" + X(0.912) + " " + Y(-0.55) + ' Z" fill="' + (eva ? "#3d4044" : grip ? "url(#g-grip)" : "#b4b8bc") + '" stroke="' + groove + '" stroke-width="1.6"/>';
+    d += '</g>';
+    g += d;
+    // pedestal sockets on the centreline
+    [0.15, 0.758].forEach(function (u) {
+      g += '<circle cx="' + X(u) + '" cy="' + cy + '" r="' + Math.max(3, b * 0.06).toFixed(1) + '" fill="' + (eva ? "#3b3e42" : "#9aa0a5") + '" stroke="' + groove + '" stroke-width="1.4"/>';
+    });
+    // UNREEL on the riser
+    g += '<text x="' + X(0.892) + '" y="' + cy + '" transform="rotate(90 ' + X(0.892) + ' ' + cy + ')" text-anchor="middle" dominant-baseline="middle" ' +
+      'style="font:italic 900 ' + Math.max(7, b * 0.16).toFixed(1) + 'px Arial, sans-serif;letter-spacing:.04em" fill="' + (eva ? "#121314" : "#4b5056") + '" stroke="#c9cdd0" stroke-width=".35">UNREEL</text>';
+
+    // seats from the top
+    if (state.seating.indexOf("Pedestal seats") > -1) {
+      [0.15, 0.758].forEach(function (u) {
+        var sw = 18 * pxIn, sh = 17 * pxIn;
+        g += '<rect x="' + (+X(u) - sw / 2) + '" y="' + (cy - sh / 2) + '" width="' + sw + '" height="' + sh + '" rx="' + (3 * pxIn) + '" fill="url(#g-seat)" stroke="#0b0c0e"/>' +
+          '<rect x="' + (+X(u) - sw / 2 - 4 * pxIn) + '" y="' + (cy - sh / 2) + '" width="' + (4 * pxIn) + '" height="' + sh + '" rx="' + (1.5 * pxIn) + '" fill="#2a2d31"/>';
+      });
+    }
+
+    // console from the top: 24" wide, 18" fore and aft, aft edge of the front deck
+    var lay = LAYOUTS.filter(function (o) { return o.id === state.layout; })[0];
+    if (lay) {
+      var cxf = x0 + lay.pos * L, cw = 18 * pxIn, ch = 24 * pxIn, cx0 = cxf - cw, ctop = cy - ch / 2;
+      g += '<rect x="' + (cx0 - 3) + '" y="' + (ctop - 3) + '" width="' + (cw + 6) + '" height="' + (ch + 6) + '" rx="3" fill="#1b1d20"/>';
+      g += '<rect x="' + cx0 + '" y="' + ctop + '" width="' + cw + '" height="' + ch + '" fill="url(#g-brushed)"/>';
+      g += '<rect x="' + (cx0 + cw * 0.42) + '" y="' + ctop + '" width="' + (cw * 0.2) + '" height="' + ch + '" fill="#000" fill-opacity=".22"/>';
+      g += '<rect x="' + (cx0 + cw * 0.9) + '" y="' + ctop + '" width="' + (cw * 0.1) + '" height="' + ch + '" fill="#000" fill-opacity=".35"/>';
+      g += '<rect x="' + (cx0 + cw * 0.12) + '" y="' + (ctop + ch * 0.74) + '" width="' + (cw * 0.22) + '" height="' + (ch * 0.08) + '" fill="#0b0c0e"/>';
+      // grab bar loop seen from above
+      g += '<rect x="' + (cx0 + cw * 0.25) + '" y="' + (ctop - 2) + '" width="' + (cw * 0.8) + '" height="' + (ch + 4) + '" rx="3" fill="none" stroke="#141619" stroke-width="2.4"/>';
+      if (state.storage.indexOf("Cockpit mounted Yeti") > -1) {
+        var yw = 14 * pxIn, yh = 24 * pxIn, yx = cx0 - yw - 4 * pxIn;
+        g += '<rect x="' + yx + '" y="' + (cy - yh / 2) + '" width="' + yw + '" height="' + yh + '" rx="' + (2 * pxIn) + '" fill="#d8d8d3" stroke="#8b8b86"/>' +
+          '<line x1="' + (yx + yw * 0.15) + '" y1="' + (cy - yh / 2) + '" x2="' + (yx + yw * 0.15) + '" y2="' + (cy + yh / 2) + '" stroke="#8b8b86"/>';
+      }
+    }
+    $("plan").innerHTML = g;
   }
 
   // ---------- Boat drawing ----------
@@ -299,6 +469,7 @@
 
     // sky + distant treeline
     g += '<rect width="660" height="250" fill="url(#g-sky)"/>';
+    g += '<text class="view-tag" x="14" y="20">SIDE VIEW</text>';
     g += '<path d="M0 154 C120 146 220 152 330 149 S540 146 660 152 V' + wl + ' H0 Z" fill="#0a1a21"/>';
 
     // reflection (mirrored about the waterline, blurred, faint)
@@ -307,6 +478,9 @@
 
     // motor sits behind the transom
     g += motorSVG(x0, top, bot, 1);
+
+    // inside the boat (drawn before the hull so the hull side hides what is below the sheer)
+    g += interiorSide(x0, L, top, bot);
 
     // hull: paint, light-from-above shading, outline
     g += '<path d="' + d + '" fill="' + paint + '"/>';
@@ -331,56 +505,6 @@
     var tipY = type === "sled" ? top - 0.30 * (bot - top) : top;
     g += '<path d="M' + (x1 - 8) + " " + (tipY - 3) + " l10 -6 l4 4" + '" stroke="#c9ced2" stroke-width="2" fill="none"/>';
 
-    // seating
-    var deckY = function () { return top; };
-    function pedestal(px) {
-      var py = top;
-      return '<rect x="' + (px - 1.5) + '" y="' + (py - 30) + '" width="3" height="30" fill="#b9bec2"/>' +
-        '<path d="M' + (px - 13) + " " + (py - 32) + " h22 q3 0 3 3 v3 h-26 v-3 q0 -3 1 -3 Z" + '" fill="url(#g-seat)"/>' +
-        '<path d="M' + (px - 13) + " " + (py - 32) + " l-4 -16 q0 -3 3 -3 h4 l3 19 Z" + '" fill="url(#g-seat)"/>';
-    }
-    if (state.seating.indexOf("Pedestal seats") > -1) {
-      g += pedestal(x1 - L * 0.18);   // front deck
-      g += pedestal(x0 + L * 0.17);   // back deck
-    }
-    // stern jump seats fold flush into the deck, so they don't change the side view
-
-    // center console with grab rail and wheel
-    var lay = LAYOUTS.filter(function (o) { return o.id === state.layout; })[0];
-    if (lay) {
-      // Console shape from the Unreel drawings and photos: vertical front face, flat top,
-      // a sloped dash facing the driver, and a lower face that tucks back in to the floor.
-      var cx = x0 + L * lay.pos, cy = deckY();
-      var w = Math.max(36, L * 0.085), h = 40;
-      var xf = cx + w / 2, xt = cx + w / 2 - w * 0.42, xd = cx - w / 2 - w * 0.12, xb = cx - w / 2 + w * 0.14, yd = cy - h * 0.45;
-      var con = "M" + xb + " " + cy + " L" + xd + " " + yd + " L" + xt + " " + (cy - h) + " L" + xf + " " + (cy - h) + " L" + xf + " " + cy + " Z";
-      // grab bar: tube loop up from the dash corner, over the top, down the front face
-      var gy = cy - h - 15;
-      var bl = xt - 4;
-      var bar = "M" + bl + " " + (cy - h + 3) + " L" + bl + " " + (gy + 7) + " Q" + bl + " " + gy + " " + (bl + 7) + " " + gy +
-        " L" + (xf - 6) + " " + gy + " Q" + (xf + 1) + " " + gy + " " + (xf + 1) + " " + (gy + 7) + " L" + (xf + 1) + " " + (cy - h * 0.55);
-      g += '<path d="' + con + '" fill="url(#g-console)" stroke="#050607" stroke-width="1"/>';
-      g += '<path d="M' + xd + " " + yd + " L" + xt + " " + (cy - h) + '" stroke="#5e646b" stroke-width="1.4"/>';      // dash edge highlight
-      g += '<path d="M' + xt + " " + (cy - h) + " L" + xf + " " + (cy - h) + '" stroke="#4a5057" stroke-width="1.2"/>';  // top edge
-      // switch panel on the dash
-      var mx = (xd + xt) / 2, my = (yd + cy - h) / 2, ang = Math.atan2((cy - h) - yd, xt - xd) * 180 / Math.PI;
-      g += '<rect x="' + (mx + 2) + '" y="' + (my - 2) + '" width="7" height="3" fill="#3c4249" transform="rotate(' + ang + ' ' + mx + ' ' + my + ')"/>';
-      // throttle lever beside the dash
-      g += '<path d="M' + (xt + 4) + " " + (cy - h) + " l-3 -7 h4" + '" stroke="#1d2024" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
-      // steering wheel: short shaft straight out of the dash, wheel parallel to the dash face (seen edge-on)
-      var rad = ang * Math.PI / 180, nx = Math.sin(rad), ny = -Math.cos(rad);   // dash normal, pointing toward the driver
-      if (nx > 0) { nx = -nx; ny = -ny; }
-      var wx = mx + nx * 8, wy = my + ny * 8;
-      g += '<line x1="' + mx + '" y1="' + my + '" x2="' + wx + '" y2="' + wy + '" stroke="#8d939a" stroke-width="2.2"/>';
-      g += '<ellipse cx="' + wx + '" cy="' + wy + '" rx="2.4" ry="11" fill="none" stroke="#dfe3e6" stroke-width="2.4" transform="rotate(' + (ang + 90) + ' ' + wx + ' ' + wy + ')"/>';
-      g += '<circle cx="' + wx + '" cy="' + wy + '" r="2" fill="#aeb4ba"/>';
-      g += '<path d="' + bar + '" fill="none" stroke="#141619" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>';
-      if (state.seating.indexOf("Flip-down console front seat") > -1) {
-        g += '<path d="M' + xf + " " + (cy - 12) + " h12 q2 0 2 2 v3 h-14 Z" + '" fill="url(#g-seat)"/>' +
-          '<path d="M' + xf + " " + (cy - 12) + " v-14 h3 v14 Z" + '" fill="url(#g-seat)"/>';
-      }
-    }
-
     // water over the submerged part, ripples, reflection
     g += '<rect x="0" y="' + wl + '" width="660" height="' + (250 - wl) + '" fill="url(#g-water)"/>';
     g += refl;
@@ -394,6 +518,7 @@
     g += '<line class="dim" x1="' + x0 + '" y1="226" x2="' + x1 + '" y2="226"/><line class="dim" x1="' + x0 + '" y1="220" x2="' + x0 + '" y2="232"/><line class="dim" x1="' + x1 + '" y1="220" x2="' + x1 + '" y2="232"/>';
     g += '<text x="' + ((x0 + x1) / 2) + '" y="246" text-anchor="middle">' + (state.length ? lengthLabel(state.length).toUpperCase() : "LENGTH") + "</text>";
     $("boat").innerHTML = g;
+    drawPlan(x0, L, pods);
 
     $("summary").innerHTML = [["Hull", state.hull], ["Length", lengthLabel(state.length)], ["Pods", state.pods ? (state.pods === "Float pods" ? "Yes" : "No") : ""], ["Layout", state.layout]]
       .map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + esc(r[1] || "—") + "</dd></div>"; }).join("");

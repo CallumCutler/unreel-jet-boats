@@ -307,3 +307,15 @@ dialog#viewer::backdrop{background:rgba(0,0,0,.85)}
 .preview .stage{background:#0e242f}
 .preview .dim{stroke:#8fa6b0}
 .preview text{fill:#b7c7ce}
+.preview text.view-tag,.preview .view-tag{font:500 10px var(--mono);fill:#8fa6b0;letter-spacing:.14em}
+#plan{display:block;width:100%;height:auto}
+
+/* models: deck layout + specs */
+.layout-sec,.spec-sec{display:grid;gap:24px;border-top:1px solid var(--line);padding-top:clamp(36px,6vw,64px)}
+.layout-fig{margin:0;background:#eceae6;border-radius:2px;overflow:hidden}
+.layout-fig img{display:block;width:100%;height:auto}
+.specs{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));column-gap:48px;border-top:1px solid var(--line)}
+.specs div{display:grid;grid-template-columns:minmax(0,11rem) minmax(0,1fr);gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+@media (max-width:480px){.specs div{grid-template-columns:1fr;gap:3px}}
+.specs dt{font:500 .75rem/1.6 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.specs dd{margin:0;font-weight:500}

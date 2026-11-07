@@ -266,6 +266,37 @@ MODELS_BODY = f"""
     </div>
     <div class="model-grid">{cards}
     </div>
+
+    <section class="layout-sec">
+      <div class="head">
+        <span class="label">Deck layout</span>
+        <h2>From the top</h2>
+        <p class="muted">Back deck with two hatches, an open cockpit floor with side shelves, the console on the aft edge of the front deck, two long hatches up front and the bow deck. Shown here in EVA foam.</p>
+      </div>
+      <figure class="layout-fig">
+        <picture><source srcset="/img/deck-layout.webp" type="image/webp"><img src="/img/deck-layout.jpg" alt="Top-down render of the Center Console Jon deck layout in grey EVA foam, with float pods at the stern and UNREEL on the bow" width="1600" height="667" loading="lazy"></picture>
+      </figure>
+    </section>
+
+    <section class="spec-sec">
+      <div class="head">
+        <span class="label">Specs</span>
+        <h2>18 ft Center Console Jon</h2>
+      </div>
+      <dl class="specs">
+        <div><dt>Length overall</dt><dd>18'4" with float pods</dd></div>
+        <div><dt>Beam</dt><dd>80"</dd></div>
+        <div><dt>Bottom width</dt><dd>60"</dd></div>
+        <div><dt>Side height</dt><dd>21-5/8"</dd></div>
+        <div><dt>Transom</dt><dd>30", 13&deg; rake</dd></div>
+        <div><dt>Jet tunnel</dt><dd>16" wide, 48" long, 3" deep</dd></div>
+        <div><dt>Float pods</dt><dd>Sealed, welded boxes aft of the transom</dd></div>
+        <div><dt>Deck layout</dt><dd>48" back deck &middot; 70" cockpit floor &middot; 58" front deck &middot; 20" bow deck</dd></div>
+        <div><dt>Bottom &amp; frames</dt><dd>3/16" 5052 marine aluminum</dd></div>
+        <div><dt>Sides &amp; decks</dt><dd>1/8" 5052 marine aluminum</dd></div>
+        <div><dt>Hull weight</dt><dd>About 870 lb, bare hull (estimate)</dd></div>
+      </dl>
+    </section>
   </main>
 """
 page("models", "Models | Unreel Custom Boats",
@@ -392,6 +423,9 @@ BUILD_BODY = """
       <aside class="preview" aria-label="Your boat so far">
         <div class="stage">
           <svg id="boat" viewBox="0 0 660 250" role="img" aria-label="Side view of your boat"></svg>
+        </div>
+        <div class="stage">
+          <svg id="plan" viewBox="0 0 660 236" role="img" aria-label="Top view of your boat's deck layout"></svg>
         </div>
         <dl class="summary" id="summary"></dl>
       </aside>
