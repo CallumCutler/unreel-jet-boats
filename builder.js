@@ -111,7 +111,7 @@
   // Side view: the same hull, motor and rail as the big preview, at card size.
   function profile(bottom) {
     var x0 = 34, x1 = 154, top = 23, bot = 45;
-    var d = hullPath(bottom, x0, x1, top, bot, true);
+    var d = hullPath(bottom, x0, x1, top, bot, false);
     return '<svg class="xsec xprof" viewBox="0 0 160 60" aria-hidden="true">' +
       '<rect width="160" height="60" fill="url(#g-sky)"/>' +
       motorSVG(x0, top, bot, 0.42) +
@@ -174,8 +174,8 @@
       // pods run ~7.5% of hull length past the transom: raked aft face, big round-over into the deck
       stern = "M" + P(-0.051, 1) + " L" + P(-0.075, 0.35) + " Q" + P(-0.072, 0) + " " + P(0.012, 0);
     } else {
-      // plain transom laid back 13 degrees (top aft)
-      stern = "M" + (xT + H * 0.23).toFixed(1) + " " + bot + " L" + P(0, 0);
+      // straight, flush transom
+      stern = "M" + xT.toFixed(1) + " " + bot + " L" + P(0, 0);
     }
     if (type === "sled") {
       bow = " L" + P(0.84, 0) + " L" + P(1, -0.30) + " C" + P(0.92, 0.32) + " " + P(0.80, 1) + " " + P(0.62, 1);
@@ -289,7 +289,7 @@
   function drawBoat() {
     var len = state.length || (state.hull ? hullById(state.hull).lengths[Math.floor(hullById(state.hull).lengths.length / 2)] : 16);
     var L = 230 + (len - 10) / 14 * 300;                       // hull length, transom to bow
-    var pods = state.pods !== "No float pods";                   // show pods until they pick "No"
+    var pods = state.pods === "Float pods";                     // pods only once they pick them
     var total = L * (pods ? 1.075 : 1), x0 = 340 - total / 2 + 14 + (pods ? L * 0.075 : 0), x1 = x0 + L;  // x0 = transom
     var top = 118, bot = 170, wl = 162, type = state.hull ? hullById(state.hull).bottom : "jon";
     var color = COLORS.filter(function (c) { return c.id === state.color; })[0];
@@ -318,9 +318,9 @@
       g += '<line x1="' + sx + '" y1="' + (top + 6) + '" x2="' + sx + '" y2="' + (bot - 4) + '" stroke="#000" stroke-opacity=".12" stroke-width="1"/>';
     }
     // chine line
-    var sternX = pods ? x0 - L * 0.06 : x0 + 8;
+    var sternX = pods ? x0 - L * 0.06 : x0 + 1;
     g += '<path d="M' + sternX + " " + (bot - 6) + " L" + (x1 - L * 0.37) + " " + (bot - 6) + '" stroke="#000" stroke-opacity=".28" stroke-width="1.2"/>';
-    if (pods) g += '<line x1="' + x0 + '" y1="' + (top + 3) + '" x2="' + (x0 + 6) + '" y2="' + (bot - 2) + '" stroke="#000" stroke-opacity=".3" stroke-width="1.2"/>';
+    if (pods) g += '<line x1="' + x0 + '" y1="' + (top + 3) + '" x2="' + x0 + '" y2="' + (bot - 2) + '" stroke="#000" stroke-opacity=".3" stroke-width="1.2"/>';
     // rub rail along the gunwale
     var bowRail = type === "sled" ? (x1 - L * 0.16) : (x1 - L * 0.04), railStart = pods ? x0 + 1 : x0 + 2;
     g += '<path d="M' + railStart + " " + (top + 1.5) + " L" + bowRail + " " + (top + 1.5) + '" stroke="#d9dde0" stroke-width="3.4" stroke-linecap="round"/>';
@@ -348,19 +348,36 @@
     // center console with grab rail and wheel
     var lay = LAYOUTS.filter(function (o) { return o.id === state.layout; })[0];
     if (lay) {
+      // Console shape from the Unreel drawings and photos: vertical front face, flat top,
+      // a sloped dash facing the driver, and a lower face that tucks back in to the floor.
       var cx = x0 + L * lay.pos, cy = deckY();
-      var con = "M" + (cx - 18) + " " + cy + " L" + (cx - 18) + " " + (cy - 34) + " L" + (cx + 6) + " " + (cy - 40) +
-        " L" + (cx + 18) + " " + (cy - 30) + " L" + (cx + 18) + " " + cy + " Z";
-      g += '<path d="M' + (cx - 16) + " " + (cy - 30) + " L" + (cx - 16) + " " + (cy - 62) + " Q" + (cx - 16) + " " + (cy - 70) + " " + (cx - 8) + " " + (cy - 70) +
-        " L" + (cx + 10) + " " + (cy - 70) + " Q" + (cx + 18) + " " + (cy - 70) + " " + (cx + 18) + " " + (cy - 62) + " L" + (cx + 18) + " " + (cy - 34) +
-        '" fill="none" stroke="#141619" stroke-width="3.2" stroke-linecap="round"/>';
+      var w = Math.max(36, L * 0.085), h = 40;
+      var xf = cx + w / 2, xt = cx + w / 2 - w * 0.42, xd = cx - w / 2 - w * 0.12, xb = cx - w / 2 + w * 0.14, yd = cy - h * 0.45;
+      var con = "M" + xb + " " + cy + " L" + xd + " " + yd + " L" + xt + " " + (cy - h) + " L" + xf + " " + (cy - h) + " L" + xf + " " + cy + " Z";
+      // grab bar: tube loop up from the dash corner, over the top, down the front face
+      var gy = cy - h - 15;
+      var bl = xt - 4;
+      var bar = "M" + bl + " " + (cy - h + 3) + " L" + bl + " " + (gy + 7) + " Q" + bl + " " + gy + " " + (bl + 7) + " " + gy +
+        " L" + (xf - 6) + " " + gy + " Q" + (xf + 1) + " " + gy + " " + (xf + 1) + " " + (gy + 7) + " L" + (xf + 1) + " " + (cy - h * 0.55);
       g += '<path d="' + con + '" fill="url(#g-console)" stroke="#050607" stroke-width="1"/>';
-      g += '<path d="M' + (cx - 18) + " " + (cy - 34) + " L" + (cx + 6) + " " + (cy - 40) + '" stroke="#5e646b" stroke-width="1.2"/>';
-      g += '<line x1="' + (cx - 6) + '" y1="' + (cy - 37) + '" x2="' + (cx - 14) + '" y2="' + (cy - 48) + '" stroke="#9aa0a6" stroke-width="2"/>' +
-        '<ellipse cx="' + (cx - 15) + '" cy="' + (cy - 49) + '" rx="3" ry="9" fill="none" stroke="#d3d7da" stroke-width="2" transform="rotate(-30 ' + (cx - 15) + " " + (cy - 49) + ')"/>';
+      g += '<path d="M' + xd + " " + yd + " L" + xt + " " + (cy - h) + '" stroke="#5e646b" stroke-width="1.4"/>';      // dash edge highlight
+      g += '<path d="M' + xt + " " + (cy - h) + " L" + xf + " " + (cy - h) + '" stroke="#4a5057" stroke-width="1.2"/>';  // top edge
+      // switch panel on the dash
+      var mx = (xd + xt) / 2, my = (yd + cy - h) / 2, ang = Math.atan2((cy - h) - yd, xt - xd) * 180 / Math.PI;
+      g += '<rect x="' + (mx + 2) + '" y="' + (my - 2) + '" width="7" height="3" fill="#3c4249" transform="rotate(' + ang + ' ' + mx + ' ' + my + ')"/>';
+      // throttle lever beside the dash
+      g += '<path d="M' + (xt + 4) + " " + (cy - h) + " l-3 -7 h4" + '" stroke="#1d2024" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+      // steering wheel: short shaft straight out of the dash, wheel parallel to the dash face (seen edge-on)
+      var rad = ang * Math.PI / 180, nx = Math.sin(rad), ny = -Math.cos(rad);   // dash normal, pointing toward the driver
+      if (nx > 0) { nx = -nx; ny = -ny; }
+      var wx = mx + nx * 8, wy = my + ny * 8;
+      g += '<line x1="' + mx + '" y1="' + my + '" x2="' + wx + '" y2="' + wy + '" stroke="#8d939a" stroke-width="2.2"/>';
+      g += '<ellipse cx="' + wx + '" cy="' + wy + '" rx="2.4" ry="11" fill="none" stroke="#dfe3e6" stroke-width="2.4" transform="rotate(' + (ang + 90) + ' ' + wx + ' ' + wy + ')"/>';
+      g += '<circle cx="' + wx + '" cy="' + wy + '" r="2" fill="#aeb4ba"/>';
+      g += '<path d="' + bar + '" fill="none" stroke="#141619" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>';
       if (state.seating.indexOf("Flip-down console front seat") > -1) {
-        g += '<path d="M' + (cx + 18) + " " + (cy - 12) + " h12 q2 0 2 2 v3 h-14 Z" + '" fill="url(#g-seat)"/>' +
-          '<path d="M' + (cx + 18) + " " + (cy - 12) + " v-14 h3 v14 Z" + '" fill="url(#g-seat)"/>';
+        g += '<path d="M' + xf + " " + (cy - 12) + " h12 q2 0 2 2 v3 h-14 Z" + '" fill="url(#g-seat)"/>' +
+          '<path d="M' + xf + " " + (cy - 12) + " v-14 h3 v14 Z" + '" fill="url(#g-seat)"/>';
       }
     }
 
