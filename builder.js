@@ -27,7 +27,7 @@
     { id: "Hunter tan", hex: "#8a7556" }
   ];
 
-  var STEPS = [
+  var ALL_STEPS = [
     { key: "hull", title: "Hull style", type: "hull", required: true,
       intro: "Start with the hull. It decides how the boat rides and how shallow it can run." },
     { key: "length", title: "Length", type: "length", required: true,
@@ -69,6 +69,13 @@
     { key: "review", title: "Review & send", type: "review",
       intro: "Check your picks, add your details, and send it over. We'll get back to you to talk it through." }
   ];
+
+  // Float pods are part of the Jon build only; the sled is a separate design.
+  var STEPS = ALL_STEPS;
+  function syncSteps() {
+    STEPS = ALL_STEPS.filter(function (st) { return !(st.key === "pods" && state.hull === "Sled"); });
+    if (current > STEPS.length - 1) current = STEPS.length - 1;
+  }
 
   var FLOORS = [
     { id: "EVA foam marine floor", blurb: "Closed-cell EVA foam cut to your deck layout, with grooved borders around every hatch. Soft and quiet underfoot, non-skid wet or dry." },
@@ -117,7 +124,7 @@
   // Side view: the same hull, motor and rail as the big preview, at card size.
   function profile(bottom) {
     var x0 = 34, x1 = 154, top = 23, bot = 45;
-    var d = hullPath(bottom, x0, x1, top, bot, false);
+    var d = bottom === "sled" ? hullPathSled("sled", x0, x1, top, bot) : hullPath(bottom, x0, x1, top, bot, false);
     return '<svg class="xsec xprof" viewBox="0 0 160 60" aria-hidden="true">' +
       '<rect width="160" height="60" fill="url(#g-sky)"/>' +
       motorSVG(x0, top, bot, 0.42) +
@@ -435,6 +442,25 @@
       });
     }
 
+    // stern jump seats: two 15" x 15" squares in the back deck, hinged at its forward edge; they fold down flush
+    if (state.seating.indexOf("Stern jump seats") > -1) {
+      var halfIn = (bottomIn + 20) / 2, js = 15 * pxIn, uFwd = 0.25;
+      [1, -1].forEach(function (sg) {
+        var fIn = 0.25 * halfIn, yA = cy - sg * fIn * pxIn, yB = cy - sg * (fIn + 15) * pxIn, yTop = Math.min(yA, yB), xL = +X(uFwd) - js;
+        g += '<rect x="' + xL.toFixed(1) + '" y="' + yTop.toFixed(1) + '" width="' + js.toFixed(1) + '" height="' + js.toFixed(1) + '" rx="1.5" fill="none" stroke="' + groove + '" stroke-width="1.8"/>';
+        if (eva) g += '<rect x="' + (xL + 2.2).toFixed(1) + '" y="' + (yTop + 2.2).toFixed(1) + '" width="' + (js - 4.4).toFixed(1) + '" height="' + (js - 4.4).toFixed(1) + '" rx="1" fill="none" stroke="#d5d8db" stroke-opacity=".7" stroke-width=".9"/>';
+        g += '<line x1="' + X(uFwd) + '" y1="' + (yTop + 1.5).toFixed(1) + '" x2="' + X(uFwd) + '" y2="' + (yTop + js - 1.5).toFixed(1) + '" stroke="#c9cdd0" stroke-width="2.2"/>';   // hinge on the forward edge
+      });
+    }
+
+    // cockpit mounted Yeti in the middle of the cockpit floor
+    if (state.storage.indexOf("Cockpit mounted Yeti") > -1) {
+      var yw = 24 * pxIn, yh = 15 * pxIn, yxc = +X((0.263 + 0.582) / 2);
+      g += '<rect x="' + (yxc - yw / 2) + '" y="' + (cy - yh / 2) + '" width="' + yw + '" height="' + yh + '" rx="' + (2 * pxIn) + '" fill="#d8d8d3" stroke="#8b8b86"/>' +
+        '<line x1="' + (yxc - yw / 2) + '" y1="' + (cy - yh * 0.3) + '" x2="' + (yxc + yw / 2) + '" y2="' + (cy - yh * 0.3) + '" stroke="#8b8b86"/>' +
+        '<rect x="' + (yxc - yw * 0.12) + '" y="' + (cy + yh / 2 - 1.5) + '" width="' + (yw * 0.24) + '" height="3" fill="#6f6f6a"/>';
+    }
+
     // console from the top: 24" wide, 18" fore and aft, aft edge of the front deck
     var lay = LAYOUTS.filter(function (o) { return o.id === state.layout; })[0];
     if (lay) {
@@ -446,17 +472,114 @@
       g += '<rect x="' + (cx0 + cw * 0.12) + '" y="' + (ctop + ch * 0.74) + '" width="' + (cw * 0.22) + '" height="' + (ch * 0.08) + '" fill="#0b0c0e"/>';
       // grab bar loop seen from above
       g += '<rect x="' + (cx0 + cw * 0.25) + '" y="' + (ctop - 2) + '" width="' + (cw * 0.8) + '" height="' + (ch + 4) + '" rx="3" fill="none" stroke="#141619" stroke-width="2.4"/>';
-      if (state.storage.indexOf("Cockpit mounted Yeti") > -1) {
-        var yw = 14 * pxIn, yh = 24 * pxIn, yx = cx0 - yw - 4 * pxIn;
-        g += '<rect x="' + yx + '" y="' + (cy - yh / 2) + '" width="' + yw + '" height="' + yh + '" rx="' + (2 * pxIn) + '" fill="#d8d8d3" stroke="#8b8b86"/>' +
-          '<line x1="' + (yx + yw * 0.15) + '" y1="' + (cy - yh / 2) + '" x2="' + (yx + yw * 0.15) + '" y2="' + (cy + yh / 2) + '" stroke="#8b8b86"/>';
-      }
     }
     $("plan").innerHTML = g;
   }
 
+
+  // ---------- Sled: kept exactly as it was before the Jon build drawings (separate design) ----------
+  function hullPathSled(type, x0, x1, top, bot) {
+    var L = x1 - x0;
+    if (type === "sled") {
+      // long, straight raked bow that rises above the sheer
+      return "M" + x0 + " " + top + " L" + (x1 - L * 0.10) + " " + (top - 3) + " L" + (x1 + 2) + " " + (top - 14) +
+        " Q" + (x1 - L * 0.04) + " " + (top + 8) + " " + (x1 - L * 0.30) + " " + bot + " L" + x0 + " " + bot + " Z";
+    }
+    // jon: level sheer, long gradual arc up into the bow
+    return "M" + x0 + " " + top + " L" + (x1 - L * 0.02) + " " + (top - 2) + " Q" + (x1 + 2) + " " + (top - 2) + " " + (x1 + 2) + " " + (top + 2) +
+      " Q" + (x1 - L * 0.07) + " " + bot + " " + (x1 - L * 0.34) + " " + bot + " L" + x0 + " " + bot + " Z";
+  }
+  function drawSled() {
+    var len = state.length || (state.hull ? hullById(state.hull).lengths[Math.floor(hullById(state.hull).lengths.length / 2)] : 16);
+    var L = 240 + (len - 10) / 14 * 330, x0 = 340 - L / 2 + 16, x1 = x0 + L;
+    var top = 118, bot = 172, wl = 164, type = state.hull ? hullById(state.hull).bottom : "jon";
+    var color = COLORS.filter(function (c) { return c.id === state.color; })[0];
+    var paint = hullPaint(color && color.hex);
+    var d = hullPathSled(type, x0, x1, top, bot);
+    var g = "";
+
+    // sky + distant treeline
+    g += '<rect width="660" height="250" fill="url(#g-sky)"/>';
+    g += '<path d="M0 154 C120 146 220 152 330 149 S540 146 660 152 V' + wl + ' H0 Z" fill="#0a1a21"/>';
+
+    // reflection (mirrored about the waterline, blurred, faint)
+    var refl = '<g transform="translate(0 ' + (2 * wl) + ') scale(1 -1)" opacity=".22" filter="url(#g-blur)">' +
+      '<path d="' + d + '" fill="' + paint + '"/>' + motorSVG(x0, top, bot, 1) + '</g>';
+
+    // motor sits behind the transom
+    g += motorSVG(x0, top, bot, 1);
+
+    // hull: paint, light-from-above shading, outline
+    g += '<path d="' + d + '" fill="' + paint + '"/>';
+    g += '<path d="' + d + '" fill="url(#g-hull-shade)"/>';
+    g += '<path d="' + d + '" fill="none" stroke="#050607" stroke-opacity=".55" stroke-width="1.2"/>';
+    // welded side seams
+    for (var i = 1; i < 6; i++) {
+      var sx = x0 + L * i / 6.6;
+      g += '<line x1="' + sx + '" y1="' + (top + 6) + '" x2="' + sx + '" y2="' + (bot - 4) + '" stroke="#000" stroke-opacity=".12" stroke-width="1"/>';
+    }
+    // chine line
+    g += '<path d="M' + x0 + " " + (bot - 8) + " L" + (x1 - L * 0.36) + " " + (bot - 8) + '" stroke="#000" stroke-opacity=".28" stroke-width="1.2"/>';
+    // rub rail along the gunwale
+    var bowRail = type === "sled" ? (x1 - L * 0.10) : (x1 - L * 0.02);
+    g += '<path d="M' + (x0 - 1) + " " + (top + 2) + " L" + bowRail + " " + (top - 1) + '" stroke="#d9dde0" stroke-width="3.4" stroke-linecap="round"/>';
+    g += '<path d="M' + x0 + " " + (top + 4) + " L" + bowRail + " " + (top + 1) + '" stroke="#000" stroke-opacity=".35" stroke-width="1"/>';
+    // bow eye / anchor roller
+    g += '<path d="M' + (x1 - 6) + " " + (top - 4) + " l10 -6 l4 4" + '" stroke="#c9ced2" stroke-width="2" fill="none"/>';
+
+    // seating
+    var deckY = function (x) { return top - 2 * (x - x0) / L; };
+    if (state.seating.indexOf("Pedestal seats") > -1) {
+      var px = x1 - L * 0.2, py = deckY(px);
+      g += '<rect x="' + (px - 1.5) + '" y="' + (py - 30) + '" width="3" height="30" fill="#b9bec2"/>' +
+        '<path d="M' + (px - 13) + " " + (py - 32) + " h22 q3 0 3 3 v3 h-26 v-3 q0 -3 1 -3 Z" + '" fill="url(#g-seat)"/>' +
+        '<path d="M' + (px - 13) + " " + (py - 32) + " l-4 -16 q0 -3 3 -3 h4 l3 19 Z" + '" fill="url(#g-seat)"/>';
+    }
+    if (state.seating.indexOf("Stern jump seats") > -1) {
+      var jx = x0 + L * 0.07;
+      g += '<path d="M' + jx + " " + (top - 1) + " v-10 q0 -2 2 -2 h20 q2 0 2 2 v10 Z" + '" fill="url(#g-seat)"/>' +
+        '<path d="M' + (jx + 2) + " " + (top - 12) + " l-2 -12 q0 -2 2 -2 h4 l2 14 Z" + '" fill="url(#g-seat)"/>';
+    }
+
+    // center console with grab rail and wheel
+    var lay = LAYOUTS.filter(function (o) { return o.id === state.layout; })[0];
+    if (lay) {
+      var cx = x0 + L * lay.pos, cy = deckY(cx);
+      var con = "M" + (cx - 18) + " " + cy + " L" + (cx - 18) + " " + (cy - 34) + " L" + (cx + 6) + " " + (cy - 40) +
+        " L" + (cx + 18) + " " + (cy - 30) + " L" + (cx + 18) + " " + cy + " Z";
+      g += '<path d="M' + (cx - 16) + " " + (cy - 30) + " L" + (cx - 16) + " " + (cy - 62) + " Q" + (cx - 16) + " " + (cy - 70) + " " + (cx - 8) + " " + (cy - 70) +
+        " L" + (cx + 10) + " " + (cy - 70) + " Q" + (cx + 18) + " " + (cy - 70) + " " + (cx + 18) + " " + (cy - 62) + " L" + (cx + 18) + " " + (cy - 34) +
+        '" fill="none" stroke="#141619" stroke-width="3.2" stroke-linecap="round"/>';
+      g += '<path d="' + con + '" fill="url(#g-console)" stroke="#050607" stroke-width="1"/>';
+      g += '<path d="M' + (cx - 18) + " " + (cy - 34) + " L" + (cx + 6) + " " + (cy - 40) + '" stroke="#5e646b" stroke-width="1.2"/>';
+      g += '<line x1="' + (cx - 6) + '" y1="' + (cy - 37) + '" x2="' + (cx - 14) + '" y2="' + (cy - 48) + '" stroke="#9aa0a6" stroke-width="2"/>' +
+        '<ellipse cx="' + (cx - 15) + '" cy="' + (cy - 49) + '" rx="3" ry="9" fill="none" stroke="#d3d7da" stroke-width="2" transform="rotate(-30 ' + (cx - 15) + " " + (cy - 49) + ')"/>';
+      if (state.seating.indexOf("Flip-down console front seat") > -1) {
+        g += '<path d="M' + (cx + 18) + " " + (cy - 12) + " h12 q2 0 2 2 v3 h-14 Z" + '" fill="url(#g-seat)"/>' +
+          '<path d="M' + (cx + 18) + " " + (cy - 12) + " v-14 h3 v14 Z" + '" fill="url(#g-seat)"/>';
+      }
+    }
+
+    // water over the submerged part, ripples, reflection
+    g += '<rect x="0" y="' + wl + '" width="660" height="' + (250 - wl) + '" fill="url(#g-water)"/>';
+    g += refl;
+    g += '<path d="M' + (x0 - 40) + " " + (wl + 1) + " H" + (x1 + 10) + '" stroke="#9fd0e0" stroke-opacity=".45" stroke-width="1"/>';
+    for (var r = 0; r < 7; r++) {
+      var ry = wl + 10 + r * 9, rx = 30 + (r * 97) % 420;
+      g += '<path d="M' + rx + " " + ry + " h" + (60 + (r * 37) % 90) + '" stroke="#7fb2c4" stroke-opacity="' + (0.22 - r * 0.02) + '" stroke-width="1"/>';
+    }
+
+    // dimension
+    g += '<line class="dim" x1="' + x0 + '" y1="226" x2="' + x1 + '" y2="226"/><line class="dim" x1="' + x0 + '" y1="220" x2="' + x0 + '" y2="232"/><line class="dim" x1="' + x1 + '" y1="220" x2="' + x1 + '" y2="232"/>';
+    g += '<text x="' + ((x0 + x1) / 2) + '" y="246" text-anchor="middle">' + (state.length ? lengthLabel(state.length).toUpperCase() : "LENGTH") + "</text>";
+    $("boat").innerHTML = g;
+  }
+
   // ---------- Boat drawing ----------
   function drawBoat() {
+    var isSled = state.hull === "Sled";
+    $("plan-stage").hidden = isSled;
+    if (isSled) { drawSled(); drawSummary(); return; }
     var len = state.length || (state.hull ? hullById(state.hull).lengths[Math.floor(hullById(state.hull).lengths.length / 2)] : 16);
     var L = 230 + (len - 10) / 14 * 300;                       // hull length, transom to bow
     var pods = state.pods === "Float pods";                     // pods only once they pick them
@@ -520,7 +643,11 @@
     $("boat").innerHTML = g;
     drawPlan(x0, L, pods);
 
-    $("summary").innerHTML = [["Hull", state.hull], ["Length", lengthLabel(state.length)], ["Pods", state.pods ? (state.pods === "Float pods" ? "Yes" : "No") : ""], ["Layout", state.layout]]
+    drawSummary();
+  }
+
+  function drawSummary() {
+    $("summary").innerHTML = [["Hull", state.hull], ["Length", lengthLabel(state.length)], ["Pods", state.hull === "Sled" ? "" : state.pods ? (state.pods === "Float pods" ? "Yes" : "No") : ""], ["Layout", state.layout]]
       .map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + esc(r[1] || "—") + "</dd></div>"; }).join("");
   }
 
@@ -537,7 +664,7 @@
     $("f-extras").value = state.extras.join(", ");
   }
 
-  function render() { renderStepper(); renderPanel(); drawBoat(); syncForm(); }
+  function render() { syncSteps(); renderStepper(); renderPanel(); drawBoat(); syncForm(); }
 
   // ---------- Events ----------
   panel.addEventListener("click", function (e) {
@@ -548,10 +675,11 @@
     var s = STEPS[current], v = b.dataset.val;
     if (s.type === "hull") {
       state.hull = v;
+      if (v === "Sled") state.pods = null;
       if (state.length && hullById(v).lengths.indexOf(state.length) < 0) state.length = null;
     } else if (s.type === "length") {
       state.length = +v;
-      var ok = STEPS.filter(function (x) { return x.key === "layout"; })[0].options(state).map(function (o) { return o.id; });
+      var ok = ALL_STEPS.filter(function (x) { return x.key === "layout"; })[0].options(state).map(function (o) { return o.id; });
       if (state.layout && ok.indexOf(state.layout) < 0) state.layout = null;
     } else if (s.type === "single") {
       state[s.key] = state[s.key] === v ? null : v;
