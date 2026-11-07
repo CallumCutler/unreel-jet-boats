@@ -84,19 +84,37 @@ def page(name, title, desc, active, body):
 
 # ---------- Home ----------
 HOME = """
-  <header class="hero" id="top">
-    <div class="hero-copy">
-      <h1>Go where<br>the <em>props</em><br>can't.</h1>
-      <p>Welded aluminum jet boats from 10 to 24 feet, built one at a time in Nelson, BC for shallow rivers, gravel bars and long days on the water.</p>
-      <div class="btns">
-        <a class="btn primary" href="/contact">Start an inquiry</a>
-        <a class="btn" href="#range">See the range</a>
-      </div>
+</div>
+<header class="vhero" id="top">
+  <video class="vhero-video" autoplay muted loop playsinline disablepictureinpicture preload="auto"
+         poster="/video/hero-wide-poster.jpg" aria-hidden="true"
+         data-wide="/video/hero-wide.mp4" data-tall="/video/hero-tall.mp4"
+         data-wide-poster="/video/hero-wide-poster.jpg" data-tall-poster="/video/hero-tall-poster.jpg"></video>
+  <div class="vhero-shade" aria-hidden="true"></div>
+  <div class="vhero-copy">
+    <h1>Go where the <em>props</em> can't.</h1>
+    <p>Welded aluminum jet boats built one at a time in Nelson, BC for shallow rivers, gravel bars and long days on the water.</p>
+    <div class="btns">
+      <a class="btn" href="#walkaround">Learn more</a>
+      <a class="btn primary" href="/custom-build">Build yours</a>
     </div>
-    <figure class="hero-photo">
-      <picture><source srcset="/img/side-profile.webp" type="image/webp"><img src="/img/side-profile.jpg" alt="Black Unreel Custom Boats center console jon in shallow water on a BC river gravel bar" width="1400" height="1400" fetchpriority="high"></picture>
-    </figure>
-  </header>
+  </div>
+</header>
+<script>
+  // Pick the tall clip for portrait screens and the wide crop for landscape, then autoplay silently.
+  (function(){
+    var v=document.querySelector('.vhero-video'); if(!v) return;
+    var tall=window.matchMedia('(max-aspect-ratio: 1/1)').matches;
+    v.poster=tall?v.dataset.tallPoster:v.dataset.widePoster;
+    v.muted=true; v.defaultMuted=true;
+    v.src=tall?v.dataset.tall:v.dataset.wide;
+    var p=v.play(); if(p&&p.catch) p.catch(function(){});
+    function kick(){ if(v.paused){ var q=v.play(); if(q&&q.catch) q.catch(function(){}); } }
+    ['touchend','click','keydown'].forEach(function(ev){ document.addEventListener(ev,kick,{passive:true}); });
+  })();
+</script>
+<div class="wrap">
+
 
   <section id="walkaround" class="walk">
     <div class="walk-copy">
@@ -251,7 +269,7 @@ for key, (name, line) in SOON.items():
 cards = """
       <article class="model model-feature">
         <figure class="model-photo">
-          <picture><source srcset="/img/gravel-bar.webp" type="image/webp"><img src="/img/gravel-bar.jpg" alt="Center Console Jon pulled up on a gravel bar in a BC river" width="1400" height="1867"></picture>
+          <picture><source srcset="/img/side-profile.webp" type="image/webp"><img class="uncropped" src="/img/side-profile.jpg" alt="Black Unreel Custom Boats center console jon in shallow water on a BC river gravel bar" width="1400" height="1400"></picture>
         </figure>
         <div class="model-body">
           <span class="label">Model</span>
@@ -282,6 +300,8 @@ page("models", "Models | Unreel Custom Boats",
 
 # ---------- Gallery ----------
 GALLERY = [
+    ("drone-channel", 1100, 1954, "Overhead drone shot of a center console jon running a shallow side channel past driftwood", "Running the side channel"),
+    ("drone-wake", 1100, 1954, "Overhead drone shot of a center console jon carving a turn with a big jet wake", "Carving a turn"),
     ("gravel-bar", 1400, 1867, "Boat nosed up on a gravel bar in a clear BC river while an angler casts nearby", "On the gravel bar"),
     ("helm", 1100, 1467, "Helm console with a stainless steering wheel, switch panels and throttle", "Helm console"),
     ("stern-seating", 1100, 1467, "Stern seating with two bench seats, cup holders and a pedestal seat", "Stern seating"),
