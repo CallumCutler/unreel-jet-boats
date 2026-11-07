@@ -9,13 +9,13 @@
   --muted:#a29d9c;
   --line:#2e2d32;
   --metal:#8f8b8a;
-  --navy:#1b3a6b;        /* dark navy: buttons, fills, bars */
-  --navy-hi:#24498a;     /* navy hover */
-  --accent:#4a72b5;      /* navy, lifted just enough to read as text/lines on black */
-  --accent-2:#4a72b5;
-  --accent-3:#4a72b5;
+  --navy:#0e242f;        /* dark navy: buttons, fills, bars */
+  --navy-hi:#163846;     /* navy hover */
+  --accent:#4f8ea6;      /* navy, lifted just enough to read as text/lines on black */
+  --accent-2:#4f8ea6;
+  --accent-3:#4f8ea6;
   --accent-ink:#ffffff;
-  --water:#0f1626;
+  --water:#0e242f;
   --error:#ff8f8f;
   --iri:var(--navy);
   --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
@@ -55,8 +55,8 @@ nav :focus-visible{outline-color:var(--accent)}
 /* buttons */
 .btns{display:flex;gap:12px;flex-wrap:wrap}
 .btn{display:inline-block;padding:14px 22px;font:600 .95rem/1 var(--body);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;border:2px solid var(--fg);border-radius:2px;background:transparent;color:var(--fg);cursor:pointer}
-.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
-.btn.primary:hover{background:var(--navy-hi);border-color:var(--navy-hi);filter:none}
+.btn.primary{background:var(--navy);border-color:#2f5f72;color:#fff}
+.btn.primary:hover{background:var(--navy-hi);border-color:#3d778c;filter:none}
 .btn:hover{transform:translateY(-1px)}
 
 /* hero */
