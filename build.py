@@ -291,6 +291,7 @@ page("models", "Models | Unreel Custom Boats",
 
 # ---------- Gallery ----------
 GALLERY = [
+    ("night-lights", 1100, 1467, "Center console jon on its trailer at night with white LED strip lights glowing along the gunwales", "LED gunwale lights"),
     ("drone-channel", 1100, 1954, "Overhead drone shot of a center console jon running a shallow side channel past driftwood", "Running the side channel"),
     ("drone-wake", 1100, 1954, "Overhead drone shot of a center console jon carving a turn with a big jet wake", "Carving a turn"),
     ("gravel-bar", 1400, 1867, "Boat nosed up on a gravel bar in a clear BC river while an angler casts nearby", "On the gravel bar"),
@@ -314,6 +315,16 @@ GALLERY_BODY = f"""
       <p class="muted">Boats from the shop, out on BC rivers and lakes.</p>
     </div>
     <div class="gallery">
+      <figure class="gallery-video">
+      <video class="lazy-video" autoplay muted loop playsinline disablepictureinpicture preload="none" poster="/video/overhead-pullaway-poster.jpg" aria-label="Drone video pulling up and away from a center console jon anchored over clear turquoise river water">
+        <source data-src="/video/overhead-pullaway.mp4" type="video/mp4">
+      </video>
+    </figure>
+      <figure class="gallery-video">
+      <video class="lazy-video" autoplay muted loop playsinline disablepictureinpicture preload="none" poster="/video/bridge-tow-poster.jpg" aria-label="Drone video of a truck towing a center console jon across a wooden bridge over a BC river in fall">
+        <source data-src="/video/bridge-tow.mp4" type="video/mp4">
+      </video>
+    </figure>
       <figure class="gallery-video">
       <video class="lazy-video" autoplay muted loop playsinline disablepictureinpicture preload="none" poster="/video/walkaround-poster.jpg" aria-label="Walk-around video of a black Unreel center console jon floating in clear shallow water">
         <source data-src="/video/walkaround.mp4" type="video/mp4">
