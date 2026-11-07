@@ -32,6 +32,14 @@
       intro: "Start with the hull. It decides how the boat rides and how shallow it can run." },
     { key: "length", title: "Length", type: "length", required: true,
       intro: "Pick a length. Only the lengths built on your hull style are shown, with the bottom width where it changes by length." },
+    { key: "pods", title: "Float pods", type: "single",
+      intro: "Float pods extend the hull past the transom on both sides of the motor. They add lift at the stern and help the boat get up and run shallow.",
+      options: function () {
+        return [
+          { id: "Float pods", blurb: "Pods out the back on both sides of the motor. More stern lift, more stability at rest." },
+          { id: "No float pods", blurb: "Hull ends at the transom. Simpler and lighter." }
+        ];
+      } },
     { key: "layout", title: "Layout", type: "single",
       intro: "Where do you want the center console?",
       options: function (s) {
@@ -45,7 +53,7 @@
     { key: "storage", title: "Storage", type: "multi",
       intro: "Pick the storage you want. Skip it if you're not sure yet.",
       options: function () {
-        return ["Dry storage hatches", "Rod lockers", "Under-console storage", "Livewell", "Cooler mount"].map(function (x) { return { id: x }; });
+        return ["Dry storage hatches", "Rod lockers", "Under-console storage", "Livewell", "Cockpit mounted Yeti"].map(function (x) { return { id: x }; });
       } },
     { key: "finish", title: "Finish", type: "finish",
       intro: "Choose a hull color and what goes on the floor." },
@@ -59,10 +67,10 @@
       intro: "Check your picks, add your details, and send it over. We'll get back to you to talk it through." }
   ];
 
-  var FLOORS = ["Bare aluminum", "Marine vinyl", "Foam decking"];
+  var FLOORS = ["EVA foam marine floor", "Grip particles"];
 
   // ---------- State ----------
-  var state = { hull: null, length: null, layout: null, seating: [], storage: [], color: "Raw aluminum", floor: null, extras: [] };
+  var state = { hull: null, length: null, pods: null, layout: null, seating: [], storage: [], color: "Raw aluminum", floor: null, extras: [] };
   var current = 0;
 
   var $ = function (id) { return document.getElementById(id); };
@@ -102,8 +110,8 @@
 
   // Side view: the same hull, motor and rail as the big preview, at card size.
   function profile(bottom) {
-    var x0 = 30, x1 = 152, top = 22, bot = 44;
-    var d = hullPath(bottom, x0, x1, top, bot);
+    var x0 = 34, x1 = 154, top = 23, bot = 45;
+    var d = hullPath(bottom, x0, x1, top, bot, true);
     return '<svg class="xsec xprof" viewBox="0 0 160 60" aria-hidden="true">' +
       '<rect width="160" height="60" fill="url(#g-sky)"/>' +
       motorSVG(x0, top, bot, 0.42) +
@@ -156,17 +164,26 @@
   // Hull paint for a chosen colour: brushed metal for raw aluminum, flat paint otherwise.
   function hullPaint(hex) { return hex ? hex : "url(#g-brushed)"; }
 
-  // Side-profile hull outline. Stern at x0, bow at x1, sheer at y=top, flat bottom at y=bot.
-  function hullPath(type, x0, x1, top, bot) {
-    var L = x1 - x0;
-    if (type === "sled") {
-      // long, straight raked bow that rises above the sheer
-      return "M" + x0 + " " + top + " L" + (x1 - L * 0.10) + " " + (top - 3) + " L" + (x1 + 2) + " " + (top - 14) +
-        " Q" + (x1 - L * 0.04) + " " + (top + 8) + " " + (x1 - L * 0.30) + " " + bot + " L" + x0 + " " + bot + " Z";
+  // Side-profile hull, traced from the Unreel general arrangement drawing.
+  // xT = transom, x1 = bow tip, top = deck/sheer, bot = flat bottom. u runs 0 (transom) to 1 (bow), v runs 0 (sheer) to 1 (bottom).
+  function hullPath(type, xT, x1, top, bot, pods) {
+    var Lh = x1 - xT, H = bot - top;
+    function P(u, v) { return (xT + u * Lh).toFixed(1) + " " + (top + v * H).toFixed(1); }
+    var stern, bow;
+    if (pods) {
+      // pods run ~7.5% of hull length past the transom: raked aft face, big round-over into the deck
+      stern = "M" + P(-0.051, 1) + " L" + P(-0.075, 0.35) + " Q" + P(-0.072, 0) + " " + P(0.012, 0);
+    } else {
+      // plain transom laid back 13 degrees (top aft)
+      stern = "M" + (xT + H * 0.23).toFixed(1) + " " + bot + " L" + P(0, 0);
     }
-    // jon: level sheer, long gradual arc up into the bow
-    return "M" + x0 + " " + top + " L" + (x1 - L * 0.02) + " " + (top - 2) + " Q" + (x1 + 2) + " " + (top - 2) + " " + (x1 + 2) + " " + (top + 2) +
-      " Q" + (x1 - L * 0.07) + " " + bot + " " + (x1 - L * 0.34) + " " + bot + " L" + x0 + " " + bot + " Z";
+    if (type === "sled") {
+      bow = " L" + P(0.84, 0) + " L" + P(1, -0.30) + " C" + P(0.92, 0.32) + " " + P(0.80, 1) + " " + P(0.62, 1);
+    } else {
+      // level sheer, short bow deck, long sweeping curve down into the flat bottom
+      bow = " L" + P(0.965, 0) + " Q" + P(0.99, 0) + " " + P(1, 0.05) + " C" + P(0.935, 0.45) + " " + P(0.83, 1) + " " + P(0.65, 1);
+    }
+    return stern + bow + " Z";
   }
 
   // Outboard jet on the transom: cowling, midsection and jet intake foot.
@@ -271,11 +288,13 @@
   // ---------- Boat drawing ----------
   function drawBoat() {
     var len = state.length || (state.hull ? hullById(state.hull).lengths[Math.floor(hullById(state.hull).lengths.length / 2)] : 16);
-    var L = 240 + (len - 10) / 14 * 330, x0 = 340 - L / 2 + 16, x1 = x0 + L;
-    var top = 118, bot = 172, wl = 164, type = state.hull ? hullById(state.hull).bottom : "jon";
+    var L = 230 + (len - 10) / 14 * 300;                       // hull length, transom to bow
+    var pods = state.pods !== "No float pods";                   // show pods until they pick "No"
+    var total = L * (pods ? 1.075 : 1), x0 = 340 - total / 2 + 14 + (pods ? L * 0.075 : 0), x1 = x0 + L;  // x0 = transom
+    var top = 118, bot = 170, wl = 162, type = state.hull ? hullById(state.hull).bottom : "jon";
     var color = COLORS.filter(function (c) { return c.id === state.color; })[0];
     var paint = hullPaint(color && color.hex);
-    var d = hullPath(type, x0, x1, top, bot);
+    var d = hullPath(type, x0, x1, top, bot, pods);
     var g = "";
 
     // sky + distant treeline
@@ -295,36 +314,41 @@
     g += '<path d="' + d + '" fill="none" stroke="#050607" stroke-opacity=".55" stroke-width="1.2"/>';
     // welded side seams
     for (var i = 1; i < 6; i++) {
-      var sx = x0 + L * i / 6.6;
+      var sx = x0 + L * (0.04 + i * 0.12);
       g += '<line x1="' + sx + '" y1="' + (top + 6) + '" x2="' + sx + '" y2="' + (bot - 4) + '" stroke="#000" stroke-opacity=".12" stroke-width="1"/>';
     }
     // chine line
-    g += '<path d="M' + x0 + " " + (bot - 8) + " L" + (x1 - L * 0.36) + " " + (bot - 8) + '" stroke="#000" stroke-opacity=".28" stroke-width="1.2"/>';
+    var sternX = pods ? x0 - L * 0.06 : x0 + 8;
+    g += '<path d="M' + sternX + " " + (bot - 6) + " L" + (x1 - L * 0.37) + " " + (bot - 6) + '" stroke="#000" stroke-opacity=".28" stroke-width="1.2"/>';
+    if (pods) g += '<line x1="' + x0 + '" y1="' + (top + 3) + '" x2="' + (x0 + 6) + '" y2="' + (bot - 2) + '" stroke="#000" stroke-opacity=".3" stroke-width="1.2"/>';
     // rub rail along the gunwale
-    var bowRail = type === "sled" ? (x1 - L * 0.10) : (x1 - L * 0.02);
-    g += '<path d="M' + (x0 - 1) + " " + (top + 2) + " L" + bowRail + " " + (top - 1) + '" stroke="#d9dde0" stroke-width="3.4" stroke-linecap="round"/>';
-    g += '<path d="M' + x0 + " " + (top + 4) + " L" + bowRail + " " + (top + 1) + '" stroke="#000" stroke-opacity=".35" stroke-width="1"/>';
+    var bowRail = type === "sled" ? (x1 - L * 0.16) : (x1 - L * 0.04), railStart = pods ? x0 + 1 : x0 + 2;
+    g += '<path d="M' + railStart + " " + (top + 1.5) + " L" + bowRail + " " + (top + 1.5) + '" stroke="#d9dde0" stroke-width="3.4" stroke-linecap="round"/>';
+    g += '<path d="M' + railStart + " " + (top + 3.5) + " L" + bowRail + " " + (top + 3.5) + '" stroke="#000" stroke-opacity=".35" stroke-width="1"/>';
+    // bow deck (20" deck welded to angle)
+    if (type !== "sled") g += '<path d="M' + (x1 - L * 0.07) + " " + (top - 1) + " L" + (x1 + 1) + " " + (top + 1) + '" stroke="#6b5a45" stroke-width="2.4" stroke-linecap="round"/>';
     // bow eye / anchor roller
-    g += '<path d="M' + (x1 - 6) + " " + (top - 4) + " l10 -6 l4 4" + '" stroke="#c9ced2" stroke-width="2" fill="none"/>';
+    var tipY = type === "sled" ? top - 0.30 * (bot - top) : top;
+    g += '<path d="M' + (x1 - 8) + " " + (tipY - 3) + " l10 -6 l4 4" + '" stroke="#c9ced2" stroke-width="2" fill="none"/>';
 
     // seating
-    var deckY = function (x) { return top - 2 * (x - x0) / L; };
-    if (state.seating.indexOf("Pedestal seats") > -1) {
-      var px = x1 - L * 0.2, py = deckY(px);
-      g += '<rect x="' + (px - 1.5) + '" y="' + (py - 30) + '" width="3" height="30" fill="#b9bec2"/>' +
+    var deckY = function () { return top; };
+    function pedestal(px) {
+      var py = top;
+      return '<rect x="' + (px - 1.5) + '" y="' + (py - 30) + '" width="3" height="30" fill="#b9bec2"/>' +
         '<path d="M' + (px - 13) + " " + (py - 32) + " h22 q3 0 3 3 v3 h-26 v-3 q0 -3 1 -3 Z" + '" fill="url(#g-seat)"/>' +
         '<path d="M' + (px - 13) + " " + (py - 32) + " l-4 -16 q0 -3 3 -3 h4 l3 19 Z" + '" fill="url(#g-seat)"/>';
     }
-    if (state.seating.indexOf("Stern jump seats") > -1) {
-      var jx = x0 + L * 0.07;
-      g += '<path d="M' + jx + " " + (top - 1) + " v-10 q0 -2 2 -2 h20 q2 0 2 2 v10 Z" + '" fill="url(#g-seat)"/>' +
-        '<path d="M' + (jx + 2) + " " + (top - 12) + " l-2 -12 q0 -2 2 -2 h4 l2 14 Z" + '" fill="url(#g-seat)"/>';
+    if (state.seating.indexOf("Pedestal seats") > -1) {
+      g += pedestal(x1 - L * 0.18);   // front deck
+      g += pedestal(x0 + L * 0.17);   // back deck
     }
+    // stern jump seats fold flush into the deck, so they don't change the side view
 
     // center console with grab rail and wheel
     var lay = LAYOUTS.filter(function (o) { return o.id === state.layout; })[0];
     if (lay) {
-      var cx = x0 + L * lay.pos, cy = deckY(cx);
+      var cx = x0 + L * lay.pos, cy = deckY();
       var con = "M" + (cx - 18) + " " + cy + " L" + (cx - 18) + " " + (cy - 34) + " L" + (cx + 6) + " " + (cy - 40) +
         " L" + (cx + 18) + " " + (cy - 30) + " L" + (cx + 18) + " " + cy + " Z";
       g += '<path d="M' + (cx - 16) + " " + (cy - 30) + " L" + (cx - 16) + " " + (cy - 62) + " Q" + (cx - 16) + " " + (cy - 70) + " " + (cx - 8) + " " + (cy - 70) +
@@ -354,7 +378,7 @@
     g += '<text x="' + ((x0 + x1) / 2) + '" y="246" text-anchor="middle">' + (state.length ? lengthLabel(state.length).toUpperCase() : "LENGTH") + "</text>";
     $("boat").innerHTML = g;
 
-    $("summary").innerHTML = [["Hull", state.hull], ["Length", lengthLabel(state.length)], ["Layout", state.layout], ["Color", state.color]]
+    $("summary").innerHTML = [["Hull", state.hull], ["Length", lengthLabel(state.length)], ["Pods", state.pods ? (state.pods === "Float pods" ? "Yes" : "No") : ""], ["Layout", state.layout]]
       .map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + esc(r[1] || "—") + "</dd></div>"; }).join("");
   }
 
@@ -363,6 +387,7 @@
     $("f-hull").value = state.hull || "";
     $("f-length").value = lengthLabel(state.length);
     $("f-layout").value = state.layout || "";
+    $("f-pods").value = state.pods || "";
     $("f-seating").value = state.seating.join(", ");
     $("f-storage").value = state.storage.join(", ");
     $("f-color").value = state.color || "";
@@ -384,7 +409,7 @@
       if (state.length && hullById(v).lengths.indexOf(state.length) < 0) state.length = null;
     } else if (s.type === "length") {
       state.length = +v;
-      var ok = STEPS[2].options(state).map(function (o) { return o.id; });
+      var ok = STEPS.filter(function (x) { return x.key === "layout"; })[0].options(state).map(function (o) { return o.id; });
       if (state.layout && ok.indexOf(state.layout) < 0) state.layout = null;
     } else if (s.type === "single") {
       state[s.key] = state[s.key] === v ? null : v;

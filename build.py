@@ -344,6 +344,7 @@ BUILD_BODY = """
         <input type="hidden" name="hull" id="f-hull">
         <input type="hidden" name="length" id="f-length">
         <input type="hidden" name="layout" id="f-layout">
+        <input type="hidden" name="float-pods" id="f-pods">
         <input type="hidden" name="seating" id="f-seating">
         <input type="hidden" name="storage" id="f-storage">
         <input type="hidden" name="hull-color" id="f-color">
