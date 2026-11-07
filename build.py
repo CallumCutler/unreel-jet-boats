@@ -8,7 +8,6 @@ ROOT = Path(__file__).parent
 NAV = [
     ("/", "Home", "index"),
     ("/models", "Models", "models"),
-    ("/inventory", "Inventory", "inventory"),
     ("/custom-build", "Custom Build", "custom-build"),
     ("/gallery", "Gallery", "gallery"),
     ("/about", "About", "about"),
@@ -224,19 +223,6 @@ for key, (name, line) in SOON.items():
     page(key, f"{name} | Unreel Custom Boats", f"{name} from Unreel Custom Boats, coming soon.", key, body)
 
 
-# ---------- Inventory ----------
-INVENTORY_BODY = """
-  <main class="soon">
-    <span class="stamp">Out of stock</span>
-    <h1>Inventory</h1>
-    <p>There are no boats in stock right now. Check back soon, or tell us what you're after and we'll build it.</p>
-    <div class="btns">
-      <a class="btn primary" href="/custom-build">Build yours</a>
-      <a class="btn" href="/contact">Start an inquiry</a>
-    </div>
-  </main>
-"""
-page("inventory", "Inventory | Unreel Custom Boats", "Unreel Custom Boats inventory.", "inventory", INVENTORY_BODY)
 
 
 # ---------- Models ----------
