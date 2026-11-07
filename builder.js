@@ -9,9 +9,7 @@
   var HULLS = [
     { id: "Jon", blurb: "Flat bottom, wide and stable. The shallowest draft for creeks, backwaters and calm water.", lengths: [10, 12, 14, 16, 18], bottom: "jon",
       bottomWidths: { 10: 36, 12: 36, 14: 48, 16: 54, 18: 60 } },  // bottom (base) width in inches per length
-    { id: "Sled", blurb: "Flat bottom with a long, raked bow. The classic river jet for skinny, fast water.", lengths: range(14, 20), bottom: "sled" },
-    { id: "Mod V", blurb: "A V at the bow that flattens toward the stern. Rides softer in chop and still runs shallow.", lengths: range(14, 22), bottom: "modv" },
-    { id: "Deep V", blurb: "A sharp V the full length. Best on big lakes and rough water, and needs more depth to run.", lengths: range(16, 24), bottom: "deepv" }
+    { id: "Sled", blurb: "Flat bottom with a long, raked bow. The classic river jet for skinny, fast water.", lengths: range(14, 20), bottom: "sled" }
   ];
 
   // Console position — every boat is a center console jet
@@ -202,7 +200,7 @@
   function drawBoat() {
     var len = state.length || (state.hull ? hullById(state.hull).lengths[Math.floor(hullById(state.hull).lengths.length / 2)] : 16);
     var L = 220 + (len - 10) / 14 * 330, x0 = 330 - L / 2 + 10, x1 = x0 + L;
-    var top = 112, bot = 168, type = state.hull ? hullById(state.hull).bottom : "modv";
+    var top = 112, bot = 168, type = state.hull ? hullById(state.hull).bottom : "jon";
     var color = COLORS.filter(function (c) { return c.id === state.color; })[0];
     var fill = color && color.hex ? color.hex : "var(--metal)";
     var d;

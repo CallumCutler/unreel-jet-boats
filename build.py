@@ -154,41 +154,6 @@ HOME = """
     </div>
   </section>
 
-  <section id="range">
-    <div class="head">
-      <span class="label">The range</span>
-      <h2>Ten to twenty-four feet</h2>
-      <p class="muted">Every hull is built to order. These are the size classes builds fall into; pick a length and we'll set the beam, sides and layout around how you run.</p>
-    </div>
-    <div class="ruler">
-      <div class="ruler-inner">
-        <div class="ticks" aria-hidden="true">
-          <span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24 ft</span>
-        </div>
-        <div class="bands">
-          <div class="band">
-            <span class="label">Small</span>
-            <span class="ft">10–14'</span>
-            <p>Light, easy to launch and haul. One or two people on creeks, small rivers and lakes.</p>
-            <ul><li>Solo fishing &amp; hunting</li><li>Tiller or side console</li></ul>
-          </div>
-          <div class="band">
-            <span class="label">Mid</span>
-            <span class="ft">15–19'</span>
-            <p>The all-rounder. Room for a crew and gear on day trips up the river.</p>
-            <ul><li>Family &amp; fishing trips</li><li>Side or center console</li></ul>
-          </div>
-          <div class="band">
-            <span class="label">Large</span>
-            <span class="ft">20–24'</span>
-            <p>Bigger rivers, bigger loads, longer runs. Built for full crews and camp gear.</p>
-            <ul><li>Multi-day trips &amp; work boats</li><li>Walk-through windshield</li></ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section id="on-the-water">
     <div class="head">
       <span class="label">On the water</span>
@@ -197,19 +162,15 @@ HOME = """
     <div class="photos">
       <figure>
         <picture><source srcset="/img/helm.webp" type="image/webp"><img src="/img/helm.jpg" alt="Helm console with a stainless steering wheel, switch panels and throttle" width="1100" height="1467" loading="lazy"></picture>
-        <figcaption>Helm console</figcaption>
       </figure>
       <figure>
         <picture><source srcset="/img/stern-seating.webp" type="image/webp"><img src="/img/stern-seating.jpg" alt="Stern seating with two bench seats, cup holders and a pedestal seat" width="1100" height="1467" loading="lazy"></picture>
-        <figcaption>Stern seating</figcaption>
       </figure>
       <figure>
         <picture><source srcset="/img/beached-bow.webp" type="image/webp"><img src="/img/beached-bow.jpg" alt="Boat pulled up bow-first on a sandy lakeshore" width="1100" height="1467" loading="lazy"></picture>
-        <figcaption>Beached on the bow</figcaption>
       </figure>
       <figure>
         <picture><source srcset="/img/crew-evening.webp" type="image/webp"><img src="/img/crew-evening.jpg" alt="Three people relaxing aboard on a lake in the evening light" width="1100" height="1467" loading="lazy"></picture>
-        <figcaption>Evenings on the lake</figcaption>
       </figure>
     </div>
   </section>
@@ -241,12 +202,11 @@ HOME = """
   </section>
 """
 page("index", "Unreel Custom Boats",
-     "Welded aluminum jet boats from 10 to 24 feet, built in Nelson, BC.", "index", HOME)
+     "Welded aluminum jet boats built in Nelson, BC.", "index", HOME)
 
 
 # ---------- Coming soon pages ----------
 SOON = {
-    "inventory": ("Inventory", "Boats that are built and ready to go will be listed here soon."),
     "about": ("About", "The story behind Unreel Custom Boats is on the way."),
 }
 for key, (name, line) in SOON.items():
@@ -262,6 +222,21 @@ for key, (name, line) in SOON.items():
   </main>
 """
     page(key, f"{name} | Unreel Custom Boats", f"{name} from Unreel Custom Boats, coming soon.", key, body)
+
+
+# ---------- Inventory ----------
+INVENTORY_BODY = """
+  <main class="soon">
+    <span class="stamp">Out of stock</span>
+    <h1>Inventory</h1>
+    <p>There are no boats in stock right now. Check back soon, or tell us what you're after and we'll build it.</p>
+    <div class="btns">
+      <a class="btn primary" href="/custom-build">Build yours</a>
+      <a class="btn" href="/contact">Start an inquiry</a>
+    </div>
+  </main>
+"""
+page("inventory", "Inventory | Unreel Custom Boats", "Unreel Custom Boats inventory.", "inventory", INVENTORY_BODY)
 
 
 # ---------- Models ----------
@@ -287,7 +262,7 @@ MODELS_BODY = f"""
     <div class="head">
       <span class="label">Models</span>
       <h1>The lineup</h1>
-      <p class="muted">Every boat is built to order. Start from this model, or tell us what you need and we'll build it custom.</p>
+      <p class="muted">Start from this model, or tell us what you need and we'll build it custom.</p>
     </div>
     <div class="model-grid">{cards}
     </div>
@@ -313,7 +288,6 @@ tiles = "".join(f"""
         <button type="button" class="tile" data-src="/img/{n}.jpg" data-cap="{c}" aria-label="Open photo: {c}">
           <picture><source srcset="/img/{n}.webp" type="image/webp"><img src="/img/{n}.jpg" alt="{a}" width="{w}" height="{h}" loading="lazy"></picture>
         </button>
-        <figcaption>{c}</figcaption>
       </figure>""" for n, w, h, a, c in GALLERY)
 GALLERY_BODY = f"""
   <main class="gallery-page">
@@ -327,7 +301,6 @@ GALLERY_BODY = f"""
       <video class="lazy-video" autoplay muted loop playsinline disablepictureinpicture preload="none" poster="/video/walkaround-poster.jpg" aria-label="Walk-around video of a black Unreel center console jon floating in clear shallow water">
         <source data-src="/video/walkaround.mp4" type="video/mp4">
       </video>
-      <figcaption>Walk-around on the water</figcaption>
     </figure>{tiles}
     </div>
   </main>
@@ -444,7 +417,6 @@ CONTACT = f"""
         <div><dt>Shop</dt><dd>Nelson, BC</dd></div>
       </dl>
       <ul>
-        <li>Every boat is built to order, 10 to 24 feet</li>
         <li>Built in Nelson, BC</li>
         <li>Not sure on size yet? Tell us where you run and we'll help you pick.</li>
       </ul>
