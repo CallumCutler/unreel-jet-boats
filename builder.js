@@ -84,38 +84,110 @@
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   // ---------- Cross-section icons for hull cards ----------
+  // End view (looking at the transom): flared sides, gunwale caps, motor behind.
   function section(bottom) {
-    var paths = {
-      jon:   "M15.8 14 L30 46 L90 46 L104.2 14",          // sides at 66° from the bottom
-      sled:  "M16.2 12 L30.4 44 Q32.2 48 36 48 L84 48 Q87.8 48 89.6 44 L103.8 12",  // sides at 66° from the bottom, rounded chines
-      modv:  "M10 12 L16 40 L60 50 L104 40 L110 12",
-      deepv: "M10 10 L22 30 L60 54 L98 30 L110 10"
-    };
+    var hull = bottom === "sled"
+      ? "M16.2 12 L30.4 44 Q32.2 48 36 48 L84 48 Q87.8 48 89.6 44 L103.8 12 Z"
+      : "M15.8 14 L30 46 L90 46 L104.2 14 Z";
+    var topY = bottom === "sled" ? 12 : 14;
     return '<svg class="xsec" viewBox="0 0 120 60" aria-hidden="true">' +
-      '<line x1="0" y1="38" x2="120" y2="38" class="xsec-wl"/>' +
-      '<path d="' + paths[bottom] + '" class="xsec-hull"/></svg>';
+      '<rect width="120" height="60" fill="url(#g-sky)"/>' +
+      '<path d="M53 ' + (topY - 12) + ' h14 q3 0 3 3 v16 h-20 v-16 q0 -3 3 -3 Z" fill="url(#g-motor)"/>' +
+      '<path d="' + hull + '" fill="url(#g-brushed)"/><path d="' + hull + '" fill="url(#g-hull-shade)"/>' +
+      '<path d="M' + (bottom === "sled" ? "14 11 L19 11" : "13.6 13 L18.6 13") + '" stroke="#e7e9eb" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<path d="M' + (bottom === "sled" ? "101 11 L106 11" : "101.4 13 L106.4 13") + '" stroke="#e7e9eb" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<rect x="0" y="38" width="120" height="22" fill="url(#g-water)"/>' +
+      '<line x1="0" y1="38" x2="120" y2="38" stroke="#7fb2c4" stroke-opacity=".5" stroke-width=".8"/></svg>';
   }
 
-  // Side profiles: stern on the left, bow on the right, waterline at y=40.
+  // Side view: the same hull, motor and rail as the big preview, at card size.
   function profile(bottom) {
-    var paths = {
-      // flat bottom, low sides, short square-raked bow
-      jon:   "M8 22 L150 22 Q136 46 90 46 L8 46 Z",
-      // flat bottom, long sweeping raked bow rising well above the sheer
-      sled:  "M8 20 L120 18 L152 10 Q138 30 112 46 L8 46 Z",
-      // bottom curves up into a moderate V entry at the bow
-      modv:  "M8 18 L126 14 Q146 12 152 16 Q140 38 110 48 L8 48 Z",
-      // deeper hull, sharp high bow, keel running deep forward
-      deepv: "M8 14 L120 9 Q146 6 154 10 Q144 40 104 54 L8 52 Z"
-    };
+    var x0 = 30, x1 = 152, top = 22, bot = 44;
+    var d = hullPath(bottom, x0, x1, top, bot);
     return '<svg class="xsec xprof" viewBox="0 0 160 60" aria-hidden="true">' +
-      '<line x1="0" y1="40" x2="160" y2="40" class="xsec-wl"/>' +
-      '<path d="' + paths[bottom] + '" class="xsec-hull"/></svg>';
+      '<rect width="160" height="60" fill="url(#g-sky)"/>' +
+      motorSVG(x0, top, bot, 0.42) +
+      '<path d="' + d + '" fill="url(#g-brushed)"/><path d="' + d + '" fill="url(#g-hull-shade)"/>' +
+      '<path d="M' + x0 + " " + (top + 1) + " L" + (x1 - 4) + " " + (top - 1) + '" stroke="#e7e9eb" stroke-width="1.6"/>' +
+      '<rect x="0" y="40" width="160" height="20" fill="url(#g-water)"/>' +
+      '<line x1="0" y1="40" x2="160" y2="40" stroke="#7fb2c4" stroke-opacity=".5" stroke-width=".8"/></svg>';
   }
 
   function hullViews(bottom) {
     return '<span class="views"><span class="view">' + section(bottom) + '<span class="view-l">End</span></span>' +
       '<span class="view">' + profile(bottom) + '<span class="view-l">Side</span></span></span>';
+  }
+
+
+  // ---------- Shared SVG paint (gradients/patterns used by every boat drawing) ----------
+  (function () {
+    if (document.getElementById("boat-defs")) return;
+    var d = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    d.setAttribute("id", "boat-defs"); d.setAttribute("aria-hidden", "true");
+    d.setAttribute("style", "position:absolute;width:0;height:0;overflow:hidden");
+    d.innerHTML =
+      '<defs>' +
+      // light from above: bright gunwale, darker toward the chine
+      '<linearGradient id="g-hull-shade" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset=".12" stop-color="#fff" stop-opacity=".10"/>' +
+        '<stop offset=".55" stop-color="#000" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></linearGradient>' +
+      // brushed aluminum streaks
+      '<pattern id="g-brushed" width="320" height="8" patternUnits="userSpaceOnUse">' +
+        '<rect width="320" height="8" fill="#b4b9bd"/>' +
+        '<path d="M0 1.5h140M180 1.5h100M30 4.5h170M240 4.5h60M0 7h80M120 7h160" stroke="#c3c7ca" stroke-width=".6"/>' +
+        '<path d="M60 3h110M220 3h90M10 6h50M150 6h90" stroke="#a5aaae" stroke-width=".5"/></pattern>' +
+      '<linearGradient id="g-motor" x1="0" y1="0" x2="1" y2="0">' +
+        '<stop offset="0" stop-color="#2c3036"/><stop offset=".35" stop-color="#16181b"/><stop offset="1" stop-color="#050506"/></linearGradient>' +
+      '<linearGradient id="g-motor-top" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+      '<linearGradient id="g-console" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#2b2f35"/><stop offset="1" stop-color="#121418"/></linearGradient>' +
+      '<linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#173544"/><stop offset="1" stop-color="#0e242f"/></linearGradient>' +
+      '<linearGradient id="g-water" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#14323f" stop-opacity=".82"/><stop offset="1" stop-color="#06131a" stop-opacity=".96"/></linearGradient>' +
+      '<linearGradient id="g-seat" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#5a5f66"/><stop offset="1" stop-color="#1d2024"/></linearGradient>' +
+      '<filter id="g-blur" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="1.6"/></filter>' +
+      '</defs>';
+    document.body.appendChild(d);
+  })();
+
+  // Hull paint for a chosen colour: brushed metal for raw aluminum, flat paint otherwise.
+  function hullPaint(hex) { return hex ? hex : "url(#g-brushed)"; }
+
+  // Side-profile hull outline. Stern at x0, bow at x1, sheer at y=top, flat bottom at y=bot.
+  function hullPath(type, x0, x1, top, bot) {
+    var L = x1 - x0;
+    if (type === "sled") {
+      // long, straight raked bow that rises above the sheer
+      return "M" + x0 + " " + top + " L" + (x1 - L * 0.10) + " " + (top - 3) + " L" + (x1 + 2) + " " + (top - 14) +
+        " Q" + (x1 - L * 0.04) + " " + (top + 8) + " " + (x1 - L * 0.30) + " " + bot + " L" + x0 + " " + bot + " Z";
+    }
+    // jon: level sheer, long gradual arc up into the bow
+    return "M" + x0 + " " + top + " L" + (x1 - L * 0.02) + " " + (top - 2) + " Q" + (x1 + 2) + " " + (top - 2) + " " + (x1 + 2) + " " + (top + 2) +
+      " Q" + (x1 - L * 0.07) + " " + bot + " " + (x1 - L * 0.34) + " " + bot + " L" + x0 + " " + bot + " Z";
+  }
+
+  // Outboard jet on the transom: cowling, midsection and jet intake foot.
+  function motorSVG(xT, top, bot, s) {
+    s = s || 1;
+    var w = 36 * s, cx = xT - 16 * s, ct = top - 42 * s;
+    var cowl = "M" + (cx - w / 2) + " " + (ct + 8 * s) + " Q" + (cx - w / 2) + " " + ct + " " + (cx - w / 2 + 8 * s) + " " + ct +
+      " L" + (cx + w / 2 - 4 * s) + " " + ct + " Q" + (cx + w / 2) + " " + ct + " " + (cx + w / 2) + " " + (ct + 6 * s) +
+      " L" + (cx + w / 2) + " " + (ct + 30 * s) + " Q" + (cx + w / 2) + " " + (ct + 36 * s) + " " + (cx + w / 2 - 6 * s) + " " + (ct + 36 * s) +
+      " L" + (cx - w / 2 + 4 * s) + " " + (ct + 36 * s) + " Q" + (cx - w / 2) + " " + (ct + 36 * s) + " " + (cx - w / 2) + " " + (ct + 30 * s) + " Z";
+    var mid = "M" + (cx - 11 * s) + " " + (ct + 36 * s) + " L" + (cx + 13 * s) + " " + (ct + 36 * s) + " L" + (cx + 9 * s) + " " + (bot - 4 * s) +
+      " L" + (cx - 8 * s) + " " + (bot - 4 * s) + " Z";
+    var foot = "M" + (cx - 12 * s) + " " + (bot - 6 * s) + " L" + (cx + 10 * s) + " " + (bot - 6 * s) + " L" + (cx + 12 * s) + " " + (bot + 6 * s) +
+      " L" + (cx - 14 * s) + " " + (bot + 6 * s) + " Z";
+    return '<g class="motor-g">' +
+      '<path d="' + mid + '" fill="url(#g-motor)"/>' +
+      '<path d="' + foot + '" fill="#2a2e33" stroke="#0b0c0e" stroke-width="' + (0.8 * s) + '"/>' +
+      '<rect x="' + (cx + 6 * s) + '" y="' + (top - 6 * s) + '" width="' + (8 * s) + '" height="' + (14 * s) + '" fill="#3a3f45"/>' +
+      '<path d="' + cowl + '" fill="url(#g-motor)"/><path d="' + cowl + '" fill="url(#g-motor-top)"/>' +
+      '<path d="M' + (cx - w / 2 + 3 * s) + " " + (ct + 22 * s) + " H" + (cx + w / 2 - 3 * s) + '" stroke="#5b6168" stroke-width="' + (0.8 * s) + '"/>' +
+      '</g>';
   }
 
   // ---------- Step rendering ----------
@@ -199,31 +271,87 @@
   // ---------- Boat drawing ----------
   function drawBoat() {
     var len = state.length || (state.hull ? hullById(state.hull).lengths[Math.floor(hullById(state.hull).lengths.length / 2)] : 16);
-    var L = 220 + (len - 10) / 14 * 330, x0 = 330 - L / 2 + 10, x1 = x0 + L;
-    var top = 112, bot = 168, type = state.hull ? hullById(state.hull).bottom : "jon";
+    var L = 240 + (len - 10) / 14 * 330, x0 = 340 - L / 2 + 16, x1 = x0 + L;
+    var top = 118, bot = 172, wl = 164, type = state.hull ? hullById(state.hull).bottom : "jon";
     var color = COLORS.filter(function (c) { return c.id === state.color; })[0];
-    var fill = color && color.hex ? color.hex : "var(--metal)";
-    var d;
-    if (type === "jon") d = "M" + x0 + " " + top + " L" + (x1 + 4) + " " + top + " Q" + (x1 - L * 0.08) + " " + bot + " " + (x1 - L * 0.32) + " " + bot + " L" + x0 + " " + bot + " Z";
-    else if (type === "sled") d = "M" + x0 + " " + top + " L" + (x1 + 6) + " " + (top - 8) + " L" + (x1 - L * 0.24) + " " + bot + " L" + x0 + " " + bot + " Z";
-    else if (type === "deepv") { top = 104; bot = 176; d = "M" + x0 + " " + top + " L" + (x1 - 26) + " " + (top - 12) + " Q" + x1 + " " + (top - 14) + " " + (x1 + 8) + " " + (top - 2) + " Q" + (x1 - 26) + " " + (bot - 4) + " " + (x1 - L * 0.3) + " " + bot + " L" + x0 + " " + bot + " Z"; }
-    else d = "M" + x0 + " " + top + " L" + (x1 - 22) + " " + (top - 8) + " Q" + x1 + " " + (top - 10) + " " + (x1 + 6) + " " + top + " Q" + (x1 - 20) + " " + (bot - 4) + " " + (x1 - L * 0.22) + " " + bot + " L" + x0 + " " + bot + " Z";
+    var paint = hullPaint(color && color.hex);
+    var d = hullPath(type, x0, x1, top, bot);
+    var g = "";
 
-    var g = '<line class="wl" x1="0" y1="156" x2="660" y2="156"/>';
-    // outboard jet
-    g += '<path class="motor" d="M' + (x0 - 30) + " " + (top - 44) + " h30 v26 h-8 v" + (bot - top + 20) + " h-12 v-" + (bot - top + 20) + " h-10 Z\"/>";
-    g += '<path class="hull" fill="' + fill + '" d="' + d + '"/>';
-    g += '<path class="rail" d="M' + x0 + " " + (top + 12) + " L" + (x1 - 14) + " " + (top + 4) + '"/>';
-    // layout
+    // sky + distant treeline
+    g += '<rect width="660" height="250" fill="url(#g-sky)"/>';
+    g += '<path d="M0 154 C120 146 220 152 330 149 S540 146 660 152 V' + wl + ' H0 Z" fill="#0a1a21"/>';
+
+    // reflection (mirrored about the waterline, blurred, faint)
+    var refl = '<g transform="translate(0 ' + (2 * wl) + ') scale(1 -1)" opacity=".22" filter="url(#g-blur)">' +
+      '<path d="' + d + '" fill="' + paint + '"/>' + motorSVG(x0, top, bot, 1) + '</g>';
+
+    // motor sits behind the transom
+    g += motorSVG(x0, top, bot, 1);
+
+    // hull: paint, light-from-above shading, outline
+    g += '<path d="' + d + '" fill="' + paint + '"/>';
+    g += '<path d="' + d + '" fill="url(#g-hull-shade)"/>';
+    g += '<path d="' + d + '" fill="none" stroke="#050607" stroke-opacity=".55" stroke-width="1.2"/>';
+    // welded side seams
+    for (var i = 1; i < 6; i++) {
+      var sx = x0 + L * i / 6.6;
+      g += '<line x1="' + sx + '" y1="' + (top + 6) + '" x2="' + sx + '" y2="' + (bot - 4) + '" stroke="#000" stroke-opacity=".12" stroke-width="1"/>';
+    }
+    // chine line
+    g += '<path d="M' + x0 + " " + (bot - 8) + " L" + (x1 - L * 0.36) + " " + (bot - 8) + '" stroke="#000" stroke-opacity=".28" stroke-width="1.2"/>';
+    // rub rail along the gunwale
+    var bowRail = type === "sled" ? (x1 - L * 0.10) : (x1 - L * 0.02);
+    g += '<path d="M' + (x0 - 1) + " " + (top + 2) + " L" + bowRail + " " + (top - 1) + '" stroke="#d9dde0" stroke-width="3.4" stroke-linecap="round"/>';
+    g += '<path d="M' + x0 + " " + (top + 4) + " L" + bowRail + " " + (top + 1) + '" stroke="#000" stroke-opacity=".35" stroke-width="1"/>';
+    // bow eye / anchor roller
+    g += '<path d="M' + (x1 - 6) + " " + (top - 4) + " l10 -6 l4 4" + '" stroke="#c9ced2" stroke-width="2" fill="none"/>';
+
+    // seating
+    var deckY = function (x) { return top - 2 * (x - x0) / L; };
+    if (state.seating.indexOf("Pedestal seats") > -1) {
+      var px = x1 - L * 0.2, py = deckY(px);
+      g += '<rect x="' + (px - 1.5) + '" y="' + (py - 30) + '" width="3" height="30" fill="#b9bec2"/>' +
+        '<path d="M' + (px - 13) + " " + (py - 32) + " h22 q3 0 3 3 v3 h-26 v-3 q0 -3 1 -3 Z" + '" fill="url(#g-seat)"/>' +
+        '<path d="M' + (px - 13) + " " + (py - 32) + " l-4 -16 q0 -3 3 -3 h4 l3 19 Z" + '" fill="url(#g-seat)"/>';
+    }
+    if (state.seating.indexOf("Stern jump seats") > -1) {
+      var jx = x0 + L * 0.07;
+      g += '<path d="M' + jx + " " + (top - 1) + " v-10 q0 -2 2 -2 h20 q2 0 2 2 v10 Z" + '" fill="url(#g-seat)"/>' +
+        '<path d="M' + (jx + 2) + " " + (top - 12) + " l-2 -12 q0 -2 2 -2 h4 l2 14 Z" + '" fill="url(#g-seat)"/>';
+    }
+
+    // center console with grab rail and wheel
     var lay = LAYOUTS.filter(function (o) { return o.id === state.layout; })[0];
     if (lay) {
-      var cx = x0 + L * lay.pos, cy = top - 8 * (cx - x0) / L;   // follow the rising sheer
-      g += '<rect class="part" x="' + (cx - 22) + '" y="' + (cy - 36) + '" width="44" height="36"/>' +
-        '<path class="glass" d="M' + (cx + 6) + " " + (cy - 36) + " l12 -20 h8 l-4 20 Z\"/>";
+      var cx = x0 + L * lay.pos, cy = deckY(cx);
+      var con = "M" + (cx - 18) + " " + cy + " L" + (cx - 18) + " " + (cy - 34) + " L" + (cx + 6) + " " + (cy - 40) +
+        " L" + (cx + 18) + " " + (cy - 30) + " L" + (cx + 18) + " " + cy + " Z";
+      g += '<path d="M' + (cx - 16) + " " + (cy - 30) + " L" + (cx - 16) + " " + (cy - 62) + " Q" + (cx - 16) + " " + (cy - 70) + " " + (cx - 8) + " " + (cy - 70) +
+        " L" + (cx + 10) + " " + (cy - 70) + " Q" + (cx + 18) + " " + (cy - 70) + " " + (cx + 18) + " " + (cy - 62) + " L" + (cx + 18) + " " + (cy - 34) +
+        '" fill="none" stroke="#141619" stroke-width="3.2" stroke-linecap="round"/>';
+      g += '<path d="' + con + '" fill="url(#g-console)" stroke="#050607" stroke-width="1"/>';
+      g += '<path d="M' + (cx - 18) + " " + (cy - 34) + " L" + (cx + 6) + " " + (cy - 40) + '" stroke="#5e646b" stroke-width="1.2"/>';
+      g += '<line x1="' + (cx - 6) + '" y1="' + (cy - 37) + '" x2="' + (cx - 14) + '" y2="' + (cy - 48) + '" stroke="#9aa0a6" stroke-width="2"/>' +
+        '<ellipse cx="' + (cx - 15) + '" cy="' + (cy - 49) + '" rx="3" ry="9" fill="none" stroke="#d3d7da" stroke-width="2" transform="rotate(-30 ' + (cx - 15) + " " + (cy - 49) + ')"/>';
+      if (state.seating.indexOf("Flip-down console front seat") > -1) {
+        g += '<path d="M' + (cx + 18) + " " + (cy - 12) + " h12 q2 0 2 2 v3 h-14 Z" + '" fill="url(#g-seat)"/>' +
+          '<path d="M' + (cx + 18) + " " + (cy - 12) + " v-14 h3 v14 Z" + '" fill="url(#g-seat)"/>';
+      }
     }
+
+    // water over the submerged part, ripples, reflection
+    g += '<rect x="0" y="' + wl + '" width="660" height="' + (250 - wl) + '" fill="url(#g-water)"/>';
+    g += refl;
+    g += '<path d="M' + (x0 - 40) + " " + (wl + 1) + " H" + (x1 + 10) + '" stroke="#9fd0e0" stroke-opacity=".45" stroke-width="1"/>';
+    for (var r = 0; r < 7; r++) {
+      var ry = wl + 10 + r * 9, rx = 30 + (r * 97) % 420;
+      g += '<path d="M' + rx + " " + ry + " h" + (60 + (r * 37) % 90) + '" stroke="#7fb2c4" stroke-opacity="' + (0.22 - r * 0.02) + '" stroke-width="1"/>';
+    }
+
     // dimension
-    g += '<line class="dim" x1="' + x0 + '" y1="214" x2="' + x1 + '" y2="214"/><line class="dim" x1="' + x0 + '" y1="207" x2="' + x0 + '" y2="221"/><line class="dim" x1="' + x1 + '" y1="207" x2="' + x1 + '" y2="221"/>';
-    g += '<text x="' + ((x0 + x1) / 2) + '" y="240" text-anchor="middle">' + (state.length ? state.length + " FT" : "LENGTH") + "</text>";
+    g += '<line class="dim" x1="' + x0 + '" y1="226" x2="' + x1 + '" y2="226"/><line class="dim" x1="' + x0 + '" y1="220" x2="' + x0 + '" y2="232"/><line class="dim" x1="' + x1 + '" y1="220" x2="' + x1 + '" y2="232"/>';
+    g += '<text x="' + ((x0 + x1) / 2) + '" y="246" text-anchor="middle">' + (state.length ? lengthLabel(state.length).toUpperCase() : "LENGTH") + "</text>";
     $("boat").innerHTML = g;
 
     $("summary").innerHTML = [["Hull", state.hull], ["Length", lengthLabel(state.length)], ["Layout", state.layout], ["Color", state.color]]

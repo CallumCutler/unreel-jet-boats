@@ -301,3 +301,9 @@ dialog#viewer::backdrop{background:rgba(0,0,0,.85)}
 #walkaround{scroll-margin-top:16px}
 /* model photo shown whole */
 .model-feature .model-photo img.uncropped{aspect-ratio:auto;object-fit:contain}
+
+/* realistic boat drawings */
+.xsec{border-radius:2px}
+.preview .stage{background:#0e242f}
+.preview .dim{stroke:#8fa6b0}
+.preview text{fill:#b7c7ce}
