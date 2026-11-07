@@ -331,7 +331,8 @@
       var xf = X(lay.pos), C = function (ix, iy) { return (xf + ix * sc).toFixed(1) + " " + (deck - iy * sc).toFixed(1); };
       var con = "M" + C(-10, 0) + " L" + C(-18, 14.9) + " L" + C(-10.4, 21.05) + " L" + C(-7.6, 21.05) + " L" + C(-5.5, 29) +
         " L" + C(-2.1, 29) + " L" + C(0, 0) + " Z";
-      g += '<path d="' + con + '" fill="url(#g-console)" stroke="#050607" stroke-width="1"/>';
+      var cpaint = hullPaint((COLORS.filter(function (c) { return c.id === state.color; })[0] || {}).hex);
+      g += '<path d="' + con + '" fill="' + cpaint + '"/><path d="' + con + '" fill="url(#g-hull-shade)" stroke="#050607" stroke-width="1"/>';
       g += '<path d="M' + C(-18, 14.9) + " L" + C(-10.4, 21.05) + '" stroke="#5e646b" stroke-width="1.4"/>';   // dash top edge
       g += '<path d="M' + C(-7.6, 21.05) + " L" + C(-5.5, 29) + " L" + C(-2.1, 29) + '" stroke="#4a5057" stroke-width="1.1" fill="none"/>';
       // Mercury remote control on the ledge
@@ -349,6 +350,10 @@
       g += '<path d="M' + bx0 + " " + (deck - 21.05 * sc) + " L" + bx0 + " " + (by + r) + " Q" + bx0 + " " + by + " " + (bx0 + r) + " " + by +
         " L" + (bx1 - r) + " " + by + " Q" + bx1 + " " + by + " " + bx1 + " " + (by + r) + " L" + bx1 + " " + (deck - 17 * sc) +
         '" fill="none" stroke="#141619" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>';
+      if (state.storage.indexOf("Cockpit mounted Yeti") > -1) {
+        g += '<rect x="' + (xf + 2 * sc) + '" y="' + (deck - 16 * sc) + '" width="' + (15 * sc) + '" height="' + (16 * sc) + '" rx="' + (1.5 * sc) + '" fill="#d8d8d3" stroke="#8b8b86"/>' +
+          '<line x1="' + (xf + 2 * sc) + '" y1="' + (deck - 13.5 * sc) + '" x2="' + (xf + 17 * sc) + '" y2="' + (deck - 13.5 * sc) + '" stroke="#8b8b86"/>';
+      }
       if (state.seating.indexOf("Flip-down console front seat") > -1) {
         g += '<path d="M' + C(0, 10) + " h" + (5 * sc) + " q" + (0.8 * sc) + " 0 " + (0.8 * sc) + " " + (0.8 * sc) + " v" + (1.2 * sc) + " h-" + (5.8 * sc) + ' Z" fill="url(#g-seat)"/>' +
           '<path d="M' + C(0, 10) + " v-" + (6 * sc) + " h" + (1.2 * sc) + " v" + (6 * sc) + ' Z" fill="url(#g-seat)"/>';
@@ -379,15 +384,20 @@
     var base = eva ? "#45484c" : grip ? "url(#g-grip)" : "url(#g-brushed)";
     var recess = eva ? "#3b3e42" : grip ? "url(#g-grip)" : "#a9aeb2";
     var groove = eva ? "#141618" : grip ? "#2a2d30" : "#7d8287";
+    // everything metal is painted the hull colour (brushed aluminum when raw)
+    var colorObj = COLORS.filter(function (c) { return c.id === state.color; })[0];
+    var paint = hullPaint(colorObj && colorObj.hex);
+    var gap = eva ? 1.3 : 0;   // EVA pads are cut as separate pieces: the painted deck shows in the seams
     function panel(u1, u2, f1, f2, fill, rr) {
-      var x = X(u1), w = (u2 - u1) * L, y = Y(Math.max(f1, f2)), hgt = Math.abs(f2 - f1) * b, o = "";
-      o += '<rect x="' + x + '" y="' + y + '" width="' + w.toFixed(1) + '" height="' + hgt.toFixed(1) + '" rx="' + (rr || 2) + '" fill="' + fill + '" stroke="' + groove + '" stroke-width="' + (eva ? 1.8 : 1) + '"/>';
+      var x = +X(u1) + gap, w = (u2 - u1) * L - 2 * gap, y = +Y(Math.max(f1, f2)) + gap, hgt = Math.abs(f2 - f1) * b - 2 * gap, o = "";
+      o += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + hgt.toFixed(1) + '" rx="' + (rr || 2) + '" fill="' + fill + '" stroke="' + groove + '" stroke-width="' + (eva ? 1.4 : 1) + '"/>';
       if (eva) o += '<rect x="' + (+x + 2.2) + '" y="' + (+y + 2.2) + '" width="' + Math.max(0, w - 4.4).toFixed(1) + '" height="' + Math.max(0, hgt - 4.4).toFixed(1) + '" rx="' + Math.max(1, (rr || 2) - 1) + '" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width=".8"/>';
       return o;
     }
     function hatch(u1, u2, f1, f2, holeU, holeF) {
-      var x = X(u1), w = (u2 - u1) * L, y = Y(Math.max(f1, f2)), hgt = Math.abs(f2 - f1) * b, o = "";
-      o += '<rect x="' + x + '" y="' + y + '" width="' + w.toFixed(1) + '" height="' + hgt.toFixed(1) + '" rx="3" fill="' + base + '" stroke="' + groove + '" stroke-width="2"/>';
+      var x = +X(u1), w = (u2 - u1) * L, y = +Y(Math.max(f1, f2)), hgt = Math.abs(f2 - f1) * b, o = "";
+      if (eva) o += '<rect x="' + (x - gap).toFixed(1) + '" y="' + (y - gap).toFixed(1) + '" width="' + (w + 2 * gap).toFixed(1) + '" height="' + (hgt + 2 * gap).toFixed(1) + '" rx="3" fill="' + paint + '"/>';
+      o += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + hgt.toFixed(1) + '" rx="3" fill="' + base + '" stroke="' + groove + '" stroke-width="' + (eva ? 1.4 : 2) + '"/>';
       if (eva) {
         o += '<rect x="' + (+x + 2.5) + '" y="' + (+y + 2.5) + '" width="' + (w - 5).toFixed(1) + '" height="' + (hgt - 5).toFixed(1) + '" rx="2" fill="none" stroke="#d5d8db" stroke-width="1.1"/>';
         o += '<rect x="' + (+x + 5) + '" y="' + (+y + 5) + '" width="' + (w - 10).toFixed(1) + '" height="' + (hgt - 10).toFixed(1) + '" rx="1.5" fill="none" stroke="#141618" stroke-width="1"/>';
@@ -402,23 +412,24 @@
     if (pods) {
       [1, -1].forEach(function (sg) {
         var yA = Y(sg * 0.97), yB = Y(sg * 0.34), top = Math.min(yA, yB), hh = Math.abs(yA - yB);
-        g += '<rect x="' + X(-0.072) + '" y="' + top + '" width="' + (0.08 * L).toFixed(1) + '" height="' + hh.toFixed(1) + '" rx="5" fill="#3a3d41" stroke="#c3c7ca" stroke-width="1.6"/>';
+        g += '<rect x="' + X(-0.072) + '" y="' + top + '" width="' + (0.08 * L).toFixed(1) + '" height="' + hh.toFixed(1) + '" rx="5" fill="' + paint + '" stroke="#000" stroke-opacity=".35" stroke-width="1"/>';
+        if (eva) g += '<rect x="' + (+X(-0.066)) + '" y="' + (top + 3) + '" width="' + (0.062 * L).toFixed(1) + '" height="' + (hh - 6).toFixed(1) + '" rx="3" fill="#45484c" stroke="#141618" stroke-width="1.2"/>';
       });
     }
     g += '<rect x="' + X(-0.07) + '" y="' + Y(0.16) + '" width="' + (0.075 * L).toFixed(1) + '" height="' + (0.32 * b).toFixed(1) + '" rx="6" fill="url(#g-motor)"/>';
 
     // hull + gunwale
-    var color = COLORS.filter(function (c) { return c.id === state.color; })[0];
-    g += '<path d="' + outline(1.02, 0, 1.006) + '" fill="' + hullPaint(color && color.hex) + '"/>';
-    g += '<path d="' + outline(1, 0, 1) + '" fill="#cdd1d4" stroke="#8e9398" stroke-width="1"/>';
+    g += '<path d="' + outline(1.02, 0, 1.006) + '" fill="' + paint + '"/>';
+    g += '<path d="' + outline(1, 0, 1) + '" fill="' + paint + '" stroke="#000" stroke-opacity=".35" stroke-width="1"/>';
+    g += '<path d="' + outline(1, 0, 1) + '" fill="#fff" fill-opacity=".08"/>';
     g += '<clipPath id="deck-clip"><path d="' + outline(0.93, 0.014, 0.975) + '"/></clipPath>';
 
     // transom cap with the motor notch
-    g += '<rect x="' + X(0) + '" y="' + Y(0.93) + '" width="' + (0.014 * L).toFixed(1) + '" height="' + (1.86 * b).toFixed(1) + '" fill="#d6d9dc"/>';
-    g += '<rect x="' + X(0) + '" y="' + Y(0.17) + '" width="' + (0.014 * L).toFixed(1) + '" height="' + (0.34 * b).toFixed(1) + '" fill="#9aa0a5"/>';
+    g += '<rect x="' + X(0) + '" y="' + Y(0.93) + '" width="' + (0.014 * L).toFixed(1) + '" height="' + (1.86 * b).toFixed(1) + '" fill="' + paint + '"/>';
+    g += '<rect x="' + X(0) + '" y="' + Y(0.17) + '" width="' + (0.014 * L).toFixed(1) + '" height="' + (0.34 * b).toFixed(1) + '" fill="#000" fill-opacity=".3"/>';
 
     var d = '<g clip-path="url(#deck-clip)">';
-    d += '<rect x="' + X(0) + '" y="' + Y(1) + '" width="' + L + '" height="' + (2 * b) + '" fill="' + base + '"/>';
+    d += '<rect x="' + X(0) + '" y="' + Y(1) + '" width="' + L + '" height="' + (2 * b) + '" fill="' + (eva ? paint : base) + '"/>';
     var small = smallJon(), deckEnd = small ? 0.22 : 0.25;
     if (small) {
       // back deck with one centre hatch, open floor, front deck with one centre hatch
@@ -440,8 +451,13 @@
       d += hatch(0.664, 0.819, 0.28, 0.70, 0.74, 0.57) + hatch(0.664, 0.819, -0.70, -0.28, 0.74, -0.57);
     }
     // riser band and bow deck
-    d += '<rect x="' + X(0.877) + '" y="' + Y(1) + '" width="' + (0.03 * L).toFixed(1) + '" height="' + (2 * b) + '" fill="' + (eva ? "#2e3134" : grip ? "#3a3d41" : "#9ca1a6") + '" stroke="' + groove + '"/>';
-    d += '<path d="M' + X(0.912) + " " + Y(0.55) + " L" + X(0.968) + " " + cy + " L" + X(0.912) + " " + Y(-0.55) + ' Z" fill="' + (eva ? "#3d4044" : grip ? "url(#g-grip)" : "#b4b8bc") + '" stroke="' + groove + '" stroke-width="1.6"/>';
+    d += '<rect x="' + (+X(0.877) + gap) + '" y="' + Y(1) + '" width="' + (0.03 * L - 2 * gap).toFixed(1) + '" height="' + (2 * b) + '" fill="' + (eva ? "#2e3134" : grip ? "#3a3d41" : "#9ca1a6") + '" stroke="' + groove + '"/>';
+    if (eva) {
+      // bow deck pad, inset so the painted nose shows around it
+      d += '<path d="M' + (+X(0.912) + 2) + " " + (+Y(0.55) + 2.6) + " L" + (+X(0.968) - 3) + " " + cy + " L" + (+X(0.912) + 2) + " " + (+Y(-0.55) - 2.6) + ' Z" fill="#3d4044" stroke="#141618" stroke-width="1.2"/>';
+    } else {
+      d += '<path d="M' + X(0.912) + " " + Y(0.55) + " L" + X(0.968) + " " + cy + " L" + X(0.912) + " " + Y(-0.55) + ' Z" fill="' + (eva ? "#3d4044" : grip ? "url(#g-grip)" : "#b4b8bc") + '" stroke="' + groove + '" stroke-width="1.6"/>';
+    }
     d += '</g>';
     g += d;
     // pedestal sockets on the centreline
@@ -472,25 +488,27 @@
       });
     }
 
-    // cockpit mounted Yeti in the middle of the cockpit floor
-    if (state.storage.indexOf("Cockpit mounted Yeti") > -1) {
-      var yw = 24 * pxIn, yh = 15 * pxIn, yxc = +X(small ? (0.228 + 0.652) / 2 : (0.263 + 0.582) / 2);
-      g += '<rect x="' + (yxc - yw / 2) + '" y="' + (cy - yh / 2) + '" width="' + yw + '" height="' + yh + '" rx="' + (2 * pxIn) + '" fill="#d8d8d3" stroke="#8b8b86"/>' +
-        '<line x1="' + (yxc - yw / 2) + '" y1="' + (cy - yh * 0.3) + '" x2="' + (yxc + yw / 2) + '" y2="' + (cy - yh * 0.3) + '" stroke="#8b8b86"/>' +
-        '<rect x="' + (yxc - yw * 0.12) + '" y="' + (cy + yh / 2 - 1.5) + '" width="' + (yw * 0.24) + '" height="3" fill="#6f6f6a"/>';
-    }
-
     // console from the top: 24" wide, 18" fore and aft, aft edge of the front deck
     var lay = LAYOUTS.filter(function (o) { return o.id === state.layout; })[0];
     if (lay) {
       var cxf = x0 + lay.pos * L, cw = 18 * pxIn, ch = 24 * pxIn, cx0 = cxf - cw, ctop = cy - ch / 2;
       g += '<rect x="' + (cx0 - 3) + '" y="' + (ctop - 3) + '" width="' + (cw + 6) + '" height="' + (ch + 6) + '" rx="3" fill="#1b1d20"/>';
-      g += '<rect x="' + cx0 + '" y="' + ctop + '" width="' + cw + '" height="' + ch + '" fill="url(#g-brushed)"/>';
+      g += '<rect x="' + cx0 + '" y="' + ctop + '" width="' + cw + '" height="' + ch + '" fill="' + paint + '"/>';
+      g += '<rect x="' + cx0 + '" y="' + ctop + '" width="' + cw + '" height="' + ch + '" fill="#fff" fill-opacity=".1"/>';
       g += '<rect x="' + (cx0 + cw * 0.42) + '" y="' + ctop + '" width="' + (cw * 0.2) + '" height="' + ch + '" fill="#000" fill-opacity=".22"/>';
       g += '<rect x="' + (cx0 + cw * 0.9) + '" y="' + ctop + '" width="' + (cw * 0.1) + '" height="' + ch + '" fill="#000" fill-opacity=".35"/>';
       g += '<rect x="' + (cx0 + cw * 0.12) + '" y="' + (ctop + ch * 0.74) + '" width="' + (cw * 0.22) + '" height="' + (ch * 0.08) + '" fill="#0b0c0e"/>';
       // grab bar loop seen from above
       g += '<rect x="' + (cx0 + cw * 0.25) + '" y="' + (ctop - 2) + '" width="' + (cw * 0.8) + '" height="' + (ch + 4) + '" rx="3" fill="none" stroke="#141619" stroke-width="2.4"/>';
+    }
+
+    // cockpit mounted Yeti: 24" across the boat, 15" fore and aft, right in front of the console
+    if (state.storage.indexOf("Cockpit mounted Yeti") > -1) {
+      var yFore = 15 * pxIn, yAcross = 24 * pxIn;
+      var yx = lay ? (x0 + lay.pos * L + 2 * pxIn) : (+X(small ? (0.228 + 0.652) / 2 : (0.263 + 0.582) / 2) - yFore / 2);
+      g += '<rect x="' + yx + '" y="' + (cy - yAcross / 2) + '" width="' + yFore + '" height="' + yAcross + '" rx="' + (2 * pxIn) + '" fill="#d8d8d3" stroke="#8b8b86"/>' +
+        '<line x1="' + (yx + yFore * 0.3) + '" y1="' + (cy - yAcross / 2) + '" x2="' + (yx + yFore * 0.3) + '" y2="' + (cy + yAcross / 2) + '" stroke="#8b8b86"/>' +
+        '<rect x="' + (yx + yFore - 1.5) + '" y="' + (cy - yAcross * 0.12) + '" width="3" height="' + (yAcross * 0.24) + '" fill="#6f6f6a"/>';
     }
     $("plan").innerHTML = g;
   }
@@ -639,7 +657,8 @@
     if (pods) g += '<line x1="' + x0 + '" y1="' + (top + 3) + '" x2="' + x0 + '" y2="' + (bot - 2) + '" stroke="#000" stroke-opacity=".3" stroke-width="1.2"/>';
     // rub rail along the gunwale
     var bowRail = type === "sled" ? (x1 - L * 0.16) : (x1 - L * 0.04), railStart = pods ? x0 + 1 : x0 + 2;
-    g += '<path d="M' + railStart + " " + (top + 1.5) + " L" + bowRail + " " + (top + 1.5) + '" stroke="#d9dde0" stroke-width="3.4" stroke-linecap="round"/>';
+    g += '<path d="M' + railStart + " " + (top + 1.5) + " L" + bowRail + " " + (top + 1.5) + '" stroke="' + (color && color.hex ? color.hex : "#d9dde0") + '" stroke-width="3.4" stroke-linecap="round"/>';
+    g += '<path d="M' + railStart + " " + (top + 0.6) + " L" + bowRail + " " + (top + 0.6) + '" stroke="#fff" stroke-opacity=".25" stroke-width="1"/>';
     g += '<path d="M' + railStart + " " + (top + 3.5) + " L" + bowRail + " " + (top + 3.5) + '" stroke="#000" stroke-opacity=".35" stroke-width="1"/>';
     // bow deck (20" deck welded to angle)
     if (type !== "sled") g += '<path d="M' + (x1 - L * 0.07) + " " + (top - 1) + " L" + (x1 + 1) + " " + (top + 1) + '" stroke="#6b5a45" stroke-width="2.4" stroke-linecap="round"/>';
