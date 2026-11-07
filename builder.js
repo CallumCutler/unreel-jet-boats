@@ -48,7 +48,7 @@
     { key: "seating", title: "Seating", type: "multi",
       intro: "Pick any you want. Skip it if you're not sure yet.",
       options: function () {
-        return ["Stern jump seats", "Pedestal seats", "Flip-down console front seat"].map(function (x) { return { id: x }; });
+        return ["Stern jump seats", "Pedestal seats"].concat(hasConsole() ? ["Flip-down console front seat"] : []).map(function (x) { return { id: x }; });
       } },
     { key: "storage", title: "Storage", type: "multi",
       intro: "Pick the storage you want. Skip it if you're not sure yet.",
@@ -72,8 +72,17 @@
 
   // Float pods are part of the Jon build only; the sled is a separate design.
   var STEPS = ALL_STEPS;
+  // 10, 12 and 14 ft Jons: front and back deck with one hatch each, open floor, no console.
+  function smallJon() { return state.hull === "Jon" && !!state.length && state.length < 16; }
+  function hasConsole() { return !smallJon(); }
+  function sockets() { return smallJon() ? [0.172, 0.71] : [0.15, 0.758]; }   // pedestal sockets, u from the transom
+
   function syncSteps() {
-    STEPS = ALL_STEPS.filter(function (st) { return !(st.key === "pods" && state.hull === "Sled"); });
+    STEPS = ALL_STEPS.filter(function (st) {
+      if (st.key === "pods" && state.hull === "Sled") return false;
+      if (st.key === "layout" && !hasConsole()) return false;
+      return true;
+    });
     if (current > STEPS.length - 1) current = STEPS.length - 1;
   }
 
@@ -310,8 +319,8 @@
         '<path d="M' + (px - 10 * sc) + " " + seatY + " l-" + (2.5 * sc) + " -" + (14 * sc) + " q0 -" + (1.5 * sc) + " " + (1.5 * sc) + " -" + (1.5 * sc) + " h" + (3 * sc) + " l" + (2.5 * sc) + " " + (15.5 * sc) + ' Z" fill="url(#g-seat)"/>';
     }
     if (state.seating.indexOf("Pedestal seats") > -1) {
-      g += pedestal(X(0.15));    // back deck socket
-      g += pedestal(X(0.758));   // front deck socket
+      g += pedestal(X(sockets()[0]));   // back deck socket
+      g += pedestal(X(sockets()[1]));   // front deck socket
     }
     // stern jump seats fold flush into the deck, so they don't change the side view
 
@@ -410,23 +419,33 @@
 
     var d = '<g clip-path="url(#deck-clip)">';
     d += '<rect x="' + X(0) + '" y="' + Y(1) + '" width="' + L + '" height="' + (2 * b) + '" fill="' + base + '"/>';
-    // back deck: two panels split on the centreline, two hatches, pedestal socket
-    d += panel(0.014, 0.25, 0, 1.2, base) + panel(0.014, 0.25, -1.2, 0, base);
-    d += hatch(0.03, 0.143, 0.18, 0.84, 0.12, 0.51) + hatch(0.03, 0.143, -0.84, -0.18, 0.12, -0.51);
-    // cockpit: side shelves and the recessed floor
-    d += panel(0.25, 0.59, 0.76, 1.2, base) + panel(0.25, 0.59, -1.2, -0.76, base);
-    d += panel(0.257, 0.587, 0.78, 0.905, base, 4) + panel(0.257, 0.587, -0.905, -0.78, base, 4);
-    d += panel(0.263, 0.582, 0, 0.75, recess, 6) + panel(0.263, 0.582, -0.75, 0, recess, 6);
-    // front deck: two panels, two long hatches, pedestal socket
-    d += panel(0.59, 0.877, 0, 1.2, base) + panel(0.59, 0.877, -1.2, 0, base);
-    d += hatch(0.664, 0.819, 0.28, 0.70, 0.74, 0.57) + hatch(0.664, 0.819, -0.70, -0.28, 0.74, -0.57);
+    var small = smallJon(), deckEnd = small ? 0.22 : 0.25;
+    if (small) {
+      // back deck with one centre hatch, open floor, front deck with one centre hatch
+      d += panel(0.014, deckEnd, 0, 1.2, base) + panel(0.014, deckEnd, -1.2, 0, base);
+      d += hatch(0.028, 0.118, -0.55, 0.55, 0.10, 0);
+      d += panel(0.228, 0.652, -0.88, 0.88, recess, 6);
+      d += panel(0.66, 0.877, 0, 1.2, base) + panel(0.66, 0.877, -1.2, 0, base);
+      d += hatch(0.765, 0.865, -0.48, 0.48, 0.85, 0);
+    } else {
+      // back deck: two panels split on the centreline, two hatches, pedestal socket
+      d += panel(0.014, 0.25, 0, 1.2, base) + panel(0.014, 0.25, -1.2, 0, base);
+      d += hatch(0.03, 0.143, 0.18, 0.84, 0.12, 0.51) + hatch(0.03, 0.143, -0.84, -0.18, 0.12, -0.51);
+      // cockpit: side shelves and the recessed floor
+      d += panel(0.25, 0.59, 0.76, 1.2, base) + panel(0.25, 0.59, -1.2, -0.76, base);
+      d += panel(0.257, 0.587, 0.78, 0.905, base, 4) + panel(0.257, 0.587, -0.905, -0.78, base, 4);
+      d += panel(0.263, 0.582, 0, 0.75, recess, 6) + panel(0.263, 0.582, -0.75, 0, recess, 6);
+      // front deck: two panels, two long hatches, pedestal socket
+      d += panel(0.59, 0.877, 0, 1.2, base) + panel(0.59, 0.877, -1.2, 0, base);
+      d += hatch(0.664, 0.819, 0.28, 0.70, 0.74, 0.57) + hatch(0.664, 0.819, -0.70, -0.28, 0.74, -0.57);
+    }
     // riser band and bow deck
     d += '<rect x="' + X(0.877) + '" y="' + Y(1) + '" width="' + (0.03 * L).toFixed(1) + '" height="' + (2 * b) + '" fill="' + (eva ? "#2e3134" : grip ? "#3a3d41" : "#9ca1a6") + '" stroke="' + groove + '"/>';
     d += '<path d="M' + X(0.912) + " " + Y(0.55) + " L" + X(0.968) + " " + cy + " L" + X(0.912) + " " + Y(-0.55) + ' Z" fill="' + (eva ? "#3d4044" : grip ? "url(#g-grip)" : "#b4b8bc") + '" stroke="' + groove + '" stroke-width="1.6"/>';
     d += '</g>';
     g += d;
     // pedestal sockets on the centreline
-    [0.15, 0.758].forEach(function (u) {
+    sockets().forEach(function (u) {
       g += '<circle cx="' + X(u) + '" cy="' + cy + '" r="' + Math.max(3, b * 0.06).toFixed(1) + '" fill="' + (eva ? "#3b3e42" : "#9aa0a5") + '" stroke="' + groove + '" stroke-width="1.4"/>';
     });
     // UNREEL on the riser
@@ -435,7 +454,7 @@
 
     // seats from the top
     if (state.seating.indexOf("Pedestal seats") > -1) {
-      [0.15, 0.758].forEach(function (u) {
+      sockets().forEach(function (u) {
         var sw = 18 * pxIn, sh = 17 * pxIn;
         g += '<rect x="' + (+X(u) - sw / 2) + '" y="' + (cy - sh / 2) + '" width="' + sw + '" height="' + sh + '" rx="' + (3 * pxIn) + '" fill="url(#g-seat)" stroke="#0b0c0e"/>' +
           '<rect x="' + (+X(u) - sw / 2 - 4 * pxIn) + '" y="' + (cy - sh / 2) + '" width="' + (4 * pxIn) + '" height="' + sh + '" rx="' + (1.5 * pxIn) + '" fill="#2a2d31"/>';
@@ -444,7 +463,7 @@
 
     // stern jump seats: two 15" x 15" squares in the back deck, hinged at its forward edge; they fold down flush
     if (state.seating.indexOf("Stern jump seats") > -1) {
-      var halfIn = (bottomIn + 20) / 2, js = 15 * pxIn, uFwd = 0.25;
+      var halfIn = (bottomIn + 20) / 2, js = 15 * pxIn, uFwd = deckEnd;
       [1, -1].forEach(function (sg) {
         var fIn = 0.25 * halfIn, yA = cy - sg * fIn * pxIn, yB = cy - sg * (fIn + 15) * pxIn, yTop = Math.min(yA, yB), xL = +X(uFwd) - js;
         g += '<rect x="' + xL.toFixed(1) + '" y="' + yTop.toFixed(1) + '" width="' + js.toFixed(1) + '" height="' + js.toFixed(1) + '" rx="1.5" fill="none" stroke="' + groove + '" stroke-width="1.8"/>';
@@ -455,7 +474,7 @@
 
     // cockpit mounted Yeti in the middle of the cockpit floor
     if (state.storage.indexOf("Cockpit mounted Yeti") > -1) {
-      var yw = 24 * pxIn, yh = 15 * pxIn, yxc = +X((0.263 + 0.582) / 2);
+      var yw = 24 * pxIn, yh = 15 * pxIn, yxc = +X(small ? (0.228 + 0.652) / 2 : (0.263 + 0.582) / 2);
       g += '<rect x="' + (yxc - yw / 2) + '" y="' + (cy - yh / 2) + '" width="' + yw + '" height="' + yh + '" rx="' + (2 * pxIn) + '" fill="#d8d8d3" stroke="#8b8b86"/>' +
         '<line x1="' + (yxc - yw / 2) + '" y1="' + (cy - yh * 0.3) + '" x2="' + (yxc + yw / 2) + '" y2="' + (cy - yh * 0.3) + '" stroke="#8b8b86"/>' +
         '<rect x="' + (yxc - yw * 0.12) + '" y="' + (cy + yh / 2 - 1.5) + '" width="' + (yw * 0.24) + '" height="3" fill="#6f6f6a"/>';
@@ -676,9 +695,14 @@
     if (s.type === "hull") {
       state.hull = v;
       if (v === "Sled") state.pods = null;
+      if (!hasConsole()) { state.layout = null; state.seating = state.seating.filter(function (x) { return x !== "Flip-down console front seat"; }); }
       if (state.length && hullById(v).lengths.indexOf(state.length) < 0) state.length = null;
     } else if (s.type === "length") {
       state.length = +v;
+      if (!hasConsole()) {
+        state.layout = null;
+        state.seating = state.seating.filter(function (x) { return x !== "Flip-down console front seat"; });
+      }
       var ok = ALL_STEPS.filter(function (x) { return x.key === "layout"; })[0].options(state).map(function (o) { return o.id; });
       if (state.layout && ok.indexOf(state.layout) < 0) state.layout = null;
     } else if (s.type === "single") {
