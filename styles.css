@@ -319,3 +319,9 @@ dialog#viewer::backdrop{background:rgba(0,0,0,.85)}
 @media (max-width:480px){.specs div{grid-template-columns:1fr;gap:3px}}
 .specs dt{font:500 .75rem/1.6 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .specs dd{margin:0;font-weight:500}
+
+/* custom paint code */
+.paint-custom{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+@media (max-width:560px){.paint-custom{grid-template-columns:1fr}}
+input[type=color]{width:100%;height:46px;padding:4px;background:var(--bg);border:1.5px solid var(--line);border-radius:2px;cursor:pointer}
+.swatch .dot-custom{border-color:var(--fg)}

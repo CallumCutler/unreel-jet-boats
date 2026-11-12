@@ -24,8 +24,15 @@
     { id: "Navy", hex: "#1b3a6b" },
     { id: "Gunmetal", hex: "#4a5260" },
     { id: "Forest green", hex: "#2f5a3f" },
-    { id: "Hunter tan", hex: "#8a7556" }
+    { id: "Hunter tan", hex: "#8a7556" },
+    // their own paint: the code goes to the shop, the picked colour is only for the preview
+    { id: "Custom paint code", hex: "#6b7480", custom: true }
   ];
+  function customColor() { return COLORS.filter(function (c) { return c.custom; })[0]; }
+  function colorLabel() {
+    if (state.color !== "Custom paint code") return state.color || "";
+    return "Custom paint code: " + (state.paintCode ? state.paintCode : "(no code entered)") + " (preview " + customColor().hex + ")";
+  }
 
   var ALL_STEPS = [
     { key: "hull", title: "Hull style", type: "hull", required: true,
@@ -281,8 +288,18 @@
       html += '<div class="opts opts-swatches">' + COLORS.map(function (c) {
         var on = state.color === c.id;
         return '<button type="button" class="swatch' + (on ? " is-on" : "") + '" data-group="color" data-val="' + esc(c.id) + '" aria-pressed="' + on + '">' +
-          '<span class="dot" style="background:' + (c.hex || "var(--metal)") + '"></span>' + esc(c.id) + "</button>";
+          '<span class="dot' + (c.custom ? " dot-custom" : "") + '" style="background:' + (c.custom && !on ? "conic-gradient(#b23a2b,#c9a227,#2f5a3f,#1b3a6b,#6b3a7a,#b23a2b)" : (c.hex || "var(--metal)")) + '"></span>' + esc(c.id) + "</button>";
       }).join("") + "</div>";
+      if (state.color === "Custom paint code") {
+        html += '<div class="paint-custom">' +
+          '<div class="field"><label for="paint-code">Paint code</label>' +
+          '<span class="hint" id="paint-code-hint">Brand and code, e.g. Sherwin-Williams SW 7069, RAL 7016 or a truck colour code.</span>' +
+          '<input id="paint-code" type="text" autocomplete="off" maxlength="80" aria-describedby="paint-code-hint" value="' + esc(state.paintCode || "") + '"></div>' +
+          '<div class="field"><label for="paint-hex">Closest colour for the preview</label>' +
+          '<span class="hint">Only changes the drawing. We match your exact code at the shop.</span>' +
+          '<input id="paint-hex" type="color" value="' + customColor().hex + '"></div>' +
+          '</div>';
+      }
     } else if (s.type === "review") {
       html += '<dl class="review">' + STEPS.slice(0, -1).map(function (st, i) {
         return "<div><dt>" + esc(st.title) + "</dt><dd>" + esc(valueFor(st.key) || "Not chosen") +
@@ -301,6 +318,7 @@
 
   function valueFor(key) {
     if (key === "length") return lengthLabel(state.length);
+    if (key === "color") return colorLabel();
     var v = state[key];
     return Array.isArray(v) ? v.join(", ") : (v || "");
   }
@@ -697,7 +715,7 @@
     $("f-pods").value = state.pods || "";
     $("f-seating").value = state.seating.join(", ");
     $("f-storage").value = state.storage.join(", ");
-    $("f-color").value = state.color || "";
+    $("f-color").value = colorLabel();
     $("f-floor").value = state.floor || "";
     $("f-extras").value = state.extras.join(", ");
   }
@@ -705,6 +723,15 @@
   function render() { syncSteps(); renderStepper(); renderPanel(); drawBoat(); syncForm(); }
 
   // ---------- Events ----------
+  panel.addEventListener("input", function (e) {
+    if (e.target.id === "paint-code") { state.paintCode = e.target.value.trim(); syncForm(); }
+    if (e.target.id === "paint-hex") {
+      customColor().hex = e.target.value;
+      var dot = panel.querySelector(".dot-custom"); if (dot) dot.style.background = e.target.value;
+      drawBoat(); syncForm();
+    }
+  });
+
   panel.addEventListener("click", function (e) {
     var edit = e.target.closest(".edit");
     if (edit) { go(+edit.dataset.step); return; }
